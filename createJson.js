@@ -1,11 +1,11 @@
 const fs = require('fs')
 
-const data = createFeatureCollection(300,300)
+const data = createFeatureCollection(100,100)
 function createFeatureCollection(x, y){
     const list = []
     for(let i=0; i<x; i++)
         for(let j=0; j<y; j++)
-            list.push(createFeature(i*y + j, x/2-i, y/2-j))
+            list.push(createFeature(i*y + j, i, j))
         
 
 
@@ -23,18 +23,18 @@ function createFeature(id, x, y){
     const REAL_SIZE = 17
     const RAT_SIZE = REAL_SIZE * 0.001 /110.941
     
-    const START_X = 126.97841
-    const START_Y = 37.56667
     const ratio = 91.29/110.941
     const x_size = RAT_SIZE
     const y_size = RAT_SIZE * ratio
+    const START_X = 126.97841 - 100*x_size/2
+    const START_Y = 37.56667 - 100*y_size/2
 
     const x_pos = START_X + x * x_size
     const y_pos = START_Y + y * y_size
     return {
         'id': id,
         'type': 'Feature',
-        'properties': {},
+        'properties': { x, y },
         'geometry': {
           'type': 'Polygon',
           'coordinates': [

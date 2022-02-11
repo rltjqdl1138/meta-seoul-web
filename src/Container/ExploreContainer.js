@@ -1,66 +1,204 @@
-import React, { StyleSheet, useRef, useEffect, useState } from 'react';
+import React from 'react';
 import MapComponent from '../Component/MapComponent';
-import { Row, Col, Container } from 'react-bootstrap';
-
-function MapContainer(){
-    
-    const [selected, setSelected] = useState({
-        id: null
-    });
-    useEffect(() => {
-
-    });
-    const selectCell = (id) =>{
-        const current = selected.id
-        setSelected({...selected, id})
-        return current;
+import TileComponent from '../Component/TileComponent';
+class QueueItem {
+    constructor(element, priority){
+        this.element = element
+        this.priority = priority
     }
-    const selectBox = ()=>{
-        if(!selected.id) return null;
+}
+class Queue{
+    constructor(){
+        this.items = [];
+    }
+    clear(){
+        this.items = []
+    }
+    push(element, priority)
+    {
+        if(priority === undefined) return;
+        var qElement = new QueueItem(element, priority);
+        var contain = false;
+     
+        for (var i = 0; i < this.items.length; i++) {
+            if (this.items[i].priority > qElement.priority) {
+                this.items.splice(i, 0, qElement);
+                contain = true;
+                break;
+            }
+        }
+     
+        if (!contain) this.items.push(qElement);
+        
+    }
+    
+    find(priority){
+        let first=-1, last=this.items.length
+        if(last === 0) return -1
+        while(first<last && last !== 0){
+            const ind = Math.floor((first+last)/2)
+            const val = this.items[ind].priority
+            if(val === priority) return ind
+            if(ind === first) return -1
+            if(val < priority) first = ind
+            else last = ind
+        }
+        return -1
+    }
+}
+
+class MapContainer extends React.Component{
+    constructor(props){
+        super(props)
+        const selectedCells = new Queue()
+        this.state = {
+            selectedCells,
+            tempCount: 0,
+            clearMap: ()=>{}
+        }
+    }
+    SetState = (field, value)=> this.setState( state =>({ ...state, [field]:value } ))
+    ClearMap = ()=>{
+        const {clearMap, selectedCells} = this.state
+        selectedCells.items.forEach(({element}) => clearMap(element.id))
+        this.SetState('selectedCells', new Queue())
+    }
+    selectCell = (list) =>{
+        const {selectedCells} = this.state
+
+        list.forEach(element =>
+            selectedCells.find(element.id) === -1 ? selectedCells.push(element,element.id) : null
+        )
+        this.setState({
+            selectedCells,
+            tempCount:0
+        })
+    }
+    getTotal = ()=>{
+        return this.state.tempCount + this.state.selectedCells.items.length
+    }
+    selectBox = ()=>{
+        const {tempCount, selectedCells} = this.state
+        const selectedTotal = selectedCells.items.length
+        const total = this.getTotal()
         return (
-            <Col style={modalStyles.container}>
-                <div style={modalStyles.background} />
+            <div style={modalStyles.container}>
+                <div className="titleInfo-border"  style={modalStyles.background} />
                 <div style={modalStyles.uiContainer}>
-                    <button onClick={()=>selectCell(null)}>X</button>
-                    <h1>선택:{selected.id}</h1>
+                    <div style={modalStyles.countContainer}>
+                        <div onClick={()=>this.ClearMap()} style={modalStyles.countClearButton}>
+                            <img style={modalStyles.countClearImage} src="/tile-icon-small.png" />
+                        </div>
+                        <div style={modalStyles.countTextContainer}>
+                            <div style={modalStyles.otherCountText}>
+                                { total === 0 ? 'There is no tile selected.' : `${total}/200 Tile Selected`}
+                            </div>
+                        </div>
+                    </div>
+                    <div style={modalStyles.detailButtonContainer}>
+                        <div className="hovered"
+                                style={{...modalStyles.detailButton, backgroundColor: selectedTotal ?"#405ca9":'#b7b7b7'}}
+                                onClick={()=> selectedTotal ? window.scrollTo(0, document.body.scrollHeight) : null} >
+                            Detail
+                        </div>
+                    </div>
                 </div>
-            </Col>
+            </div>
         )
     }
-    return (
-        <div>
-            <Row style={{width:"100%"}}>
-                <Col>
-                    <MapComponent
-                        onSelect={selectCell}
-                        selected={selected.id}
+    render(){
+        const {tempCount, selectedCells} = this.state
+        return (
+            <div>
+                <MapComponent
+                    total={this.getTotal}
+                    setProps={this.SetState}
+                    onSelect={this.selectCell}
+                />
+                <div style={{width:"100%"}}>
+                    <TileComponent
+                        cellList={selectedCells}
                     />
-                </Col>
-                {selectBox()}
-            </Row>
-        </div>
-    );
+                </div>
+                {this.selectBox()}
+            </div>
+        );
+    }
 }
 
 const modalStyles = {
     container:{
-        position: "fixed",
+        position:'absolute',
         right:100,
         top:    100,
-        width:  300,
-        height: 700
+        width:  270,
+        height: 110,
     },
     background:{
         position:'absolute',
         width:'100%',
         height:'100%',
-        backgroundColor:'gray',
-        opacity: 0.4
+        backgroundColor:'#fff',
+        opacity: 0.95,
+        borderRadius:10
     },
     uiContainer:{
         position:'absolute',
         width:'100%',
         height:'100%',
+        paddingLeft:20,
+        paddingRight:20,
+        display:'flex',
+        flexDirection:'column',
+        paddingTop:16,
+        paddingBottom:16,
+        
+    },
+    countContainer:{
+        width:'100%',
+        height:21,
+        display:'flex',
+        marginBottom:8
+    },
+    countClearButton:{
+        height:'100%',
+        width:21
+    },
+    countClearImage:{
+        width:'100%',
+        height:'100%'
+    },
+    countTextContainer:{
+        flex:1,
+        paddingLeft: 14,
+        paddingRight:14,
+        flexDirection:'row',
+        display:'flex'
+    },
+    otherCountText:{
+        flex:1,
+        height:'100%',
+        textAlign:'left',
+        fontSize:16
+    },
+    mainContainer:{
+        flex:1,
+        width:'100%'
+    },
+    detailButtonContainer:{
+        height:36,
+        width:'100%',
+        marginTop:13,
+        marginBottom:13
+    },
+    detailButton:{
+        height:'100%',
+        width:130,
+        color:'#ffffff',
+        borderRadius:18,
+        paddingTop:5,
+        paddingBottom:5,
+        margin: 'auto'
     }
 
 }

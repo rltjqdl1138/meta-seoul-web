@@ -22,6 +22,7 @@
         crossorigin></script>
 
     <script>var Alert = ReactBootstrap.Alert;</script>
+    <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
     <!--script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=088a8434c65ffe447cff5181bc6625ef"></script> -->
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
@@ -38,6 +39,14 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
+
+    <script>
+        if(typeof web3 !== undefined){
+            web3 = new Web3(web3.currentProvider)
+        }else{
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:4000"))
+        }
+    </script>
     <title>React App</title>
   </head>
   <body>

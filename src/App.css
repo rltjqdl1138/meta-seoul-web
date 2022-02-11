@@ -8,6 +8,12 @@ div{
     padding-left:0px;
     padding-right:0px;
 }
+ul{
+    display:inline-block;
+}
+ul li{
+   white-space: nowrap,
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -17,6 +23,9 @@ div{
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
+}
+.titleInfo-border{
+    border: 1px solid #cacdd5
 }
 
 .App-header {
@@ -29,7 +38,12 @@ div{
   font-size: calc(10px + 2vmin);
   color: white;
 }
-
+.hovered:hover{
+    cursor: pointer; 
+}
+.nav-container div:hover{
+    background-color:gray;
+}
 .App-link {
   color: #61dafb;
 }
