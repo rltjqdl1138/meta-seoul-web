@@ -28,11 +28,13 @@ class App extends React.Component {
         return (
             <div className="App">
                 <HeaderContainer
+                    auth={this.state.auth}
                     setLoginModal={this.setLoginModal}
                 />
                 <div style={{overflowY: this.state.isDisableLoginModal ? '' : 'hidden'}}>
                     <ExploreContainer />
                     <LoginContainer
+                        auth={this.state.auth}
                         isDisableLoginModal={this.state.isDisableLoginModal}
                         SetState={this.SetState}
                         setLoginModal={this.setLoginModal}

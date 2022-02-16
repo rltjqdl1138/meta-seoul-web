@@ -29,7 +29,11 @@ class Queue{
         }
      
         if (!contain) this.items.push(qElement);
-        
+    }
+    del(priority){
+        const ind = this.find(priority)
+        if(ind === -1) return
+        this.items = [...this.items.slice(0,ind), ...this.items.slice(ind+1, this.items.length)]
     }
     
     find(priority){
@@ -52,27 +56,55 @@ class MapContainer extends React.Component{
         super(props)
         const selectedCells = new Queue()
         this.state = {
+            history:[],
             selectedCells,
             tempCount: 0,
-            clearMap: ()=>{}
+            zoom:15.0000,
+            clearMap: ()=>{},
+            getTileData: ()=>{},
         }
     }
     SetState = (field, value)=> this.setState( state =>({ ...state, [field]:value } ))
     ClearMap = ()=>{
         const {clearMap, selectedCells} = this.state
         selectedCells.items.forEach(({element}) => clearMap(element.id))
-        this.SetState('selectedCells', new Queue())
+        this.setState( state =>({
+            ...state,
+            selectedCells:new Queue(),
+            history:[]
+        }))
+    }
+    Undo = ()=>{
+        const {clearMap, selectedCells, history} = this.state
+        if(history.length === 0) return;
+        const lastHistory = history[history.length-1]
+
+        for(let i=0; i<lastHistory.length; i++){
+            clearMap(lastHistory[i])
+            selectedCells.del(lastHistory[i])
+        }
+
+        this.setState( state =>({
+            ...state,
+            selectedCells,
+            history: history.slice(0, history.length-1)
+        }))
     }
     selectCell = (list) =>{
-        const {selectedCells} = this.state
-
-        list.forEach(element =>
-            selectedCells.find(element.id) === -1 ? selectedCells.push(element,element.id) : null
-        )
-        this.setState({
+        const {selectedCells, history} = this.state
+        const historyItem = []
+        list.forEach(element =>{
+            if( selectedCells.find(element.id) === -1){
+                selectedCells.push(element,element.id)
+                historyItem.push(element.id)
+            }
+        })
+        this.setState( state =>({
+            ...state,
+            history: historyItem.length ? [...history, historyItem] : history,
             selectedCells,
             tempCount:0
-        })
+        }))
     }
     getTotal = ()=>{
         return this.state.tempCount + this.state.selectedCells.items.length
@@ -86,7 +118,7 @@ class MapContainer extends React.Component{
                 <div className="titleInfo-border"  style={modalStyles.background} />
                 <div style={modalStyles.uiContainer}>
                     <div style={modalStyles.countContainer}>
-                        <div onClick={()=>this.ClearMap()} style={modalStyles.countClearButton}>
+                        <div onClick={()=>this.Undo()} style={modalStyles.countClearButton}>
                             <img style={modalStyles.countClearImage} src="/tile-icon-small.png" />
                         </div>
                         <div style={modalStyles.countTextContainer}>
@@ -94,6 +126,9 @@ class MapContainer extends React.Component{
                                 { total === 0 ? 'There is no tile selected.' : `${total}/200 Tile Selected`}
                             </div>
                         </div>
+                    </div>
+                    <div>
+                        zoom:{this.state.zoom}
                     </div>
                     <div style={modalStyles.detailButtonContainer}>
                         <div className="hovered"
@@ -107,7 +142,7 @@ class MapContainer extends React.Component{
         )
     }
     render(){
-        const {tempCount, selectedCells} = this.state
+        const {tempCount, selectedCells, getTileData} = this.state
         return (
             <div>
                 <MapComponent
@@ -117,6 +152,7 @@ class MapContainer extends React.Component{
                 />
                 <div style={{width:"100%"}}>
                     <TileComponent
+                        getTileData={getTileData}
                         cellList={selectedCells}
                     />
                 </div>
@@ -132,7 +168,7 @@ const modalStyles = {
         right:100,
         top:    100,
         width:  270,
-        height: 110,
+        height: 140,
     },
     background:{
         position:'absolute',

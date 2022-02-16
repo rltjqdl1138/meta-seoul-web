@@ -16,7 +16,7 @@ class TileComponent extends React.Component{
 
     render(){
         const {selectedIndex} = this.state
-        const {cellList} = this.props
+        const {cellList, getTileData} = this.props
         const list = cellList.items.map((e, index)=> (
             <TileListElement key={e.element.id}
                 index={index}
@@ -25,11 +25,16 @@ class TileComponent extends React.Component{
                 onSelect={ index => this.SetState('selectedIndex', index)}
             />
         ))
-
+            
         let selectedElement = {}
         if(selectedIndex !== null && cellList.items[selectedIndex]){
-            selectedElement = {
-                ...cellList.items[selectedIndex].element
+            const {id, x, y} = cellList.items[selectedIndex].element
+            const tileData = getTileData(x, y)
+            if(tileData){
+                selectedElement = {
+                    ...tileData.properties,
+                    id: tileData.id
+                }
             }
         }
 

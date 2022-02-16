@@ -21,13 +21,31 @@ class LoginContainer extends React.Component{
         const {isDisableLoginModal, setLoginModal} = this.props
         return isDisableLoginModal ? null :
             (
-                <div className="hover" style={styles.container} >
+                <div style={styles.container} >
                     
                     <div style={styles.background} className="hovered" onClick={()=>setLoginModal(false)} />
                     <div style={styles.loginContainer}>
+                        <div style={styles.loginTextContainer}>
+                            <div style={styles.loginTitleContainer}>
+                                Sign in
+                            </div>
+                            <div style={styles.loginContentContainer}>
+                                You can log in only with MetaMask
+                            </div>
+                        </div>
                         <div style={styles.metamaskButtonContainer}>
                             <div className="hovered" style={styles.metamaskButton} onClick={()=>this.test()}>
-
+                                <div style={styles.metamaskImageContainer}>
+                                    <img style={styles.metamaskImage} src="/metamask.png" />
+                                </div>
+                                <div>
+                                    <div style={styles.metamaskTitle}>
+                                        MetaMask
+                                    </div>
+                                    <div style={styles.metamaskContent}>
+                                        Login or Sign up
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -50,30 +68,73 @@ const styles = {
         left:0,
         width:'100%',
         height:'100%',
-        opacity:0.2,
-        backgroundColor:'black',
+        opacity:0.8,
+        backgroundColor:'#29292c',
     },
     loginContainer:{
         position:'fixed',
-        width:400,
-        height:400,
-        top: 200,
+        width:480,
+        height:250,
+        top: "50%",
         left: "50%",
-        marginLeft:-200,
-        backgroundColor:'#ffffff',
+        marginTop:-125,
+        marginLeft:-240,
+        backgroundColor:'#edf0ff',
+        display:'flex',
+        flexDirection:'column',
+
+        paddingTop:40,
+        paddingBottom:40
+    },
+    loginTextContainer:{
+        flex:1,
+        width:'100%',
+    },
+    loginTitleContainer:{
+        fontSize:24,
+        color:'#1d1e54'
+    },
+    loginContentContainer:{
+        fontSize:14,
+        color:'#7e7e7e'
+    },
+
+
+    metamaskButtonContainer:{
+        flex:1,
+        width:'100%',
+        margin:"auto",
+        padding:0,
         display:'flex'
     },
-    metamaskButtonContainer:{
-        width:'100%',
-        height:50,
-        margin:"auto",
-        background:'yellow',
-        padding:0,
-    },
     metamaskButton:{
-        width:200,
+        margin:"auto",
+        width:280,
+        height:86,
+        paddingTop:10,
+        paddingBottom:10,
+        
+        backgroundColor:'#fff',
+        border: '2px solid #dfe0e4',
+        display:'flex'
+    },
+    metamaskImageContainer:{
         height:'100%',
-        backgroundColor:'gray'
+        width:40,
+
+        marginLeft:20,
+        marginRight:20
+    },
+    metamaskImage:{
+        height:40
+    },
+    metamaskTitle:{
+        textAlign:'left',
+        fontSize:22
+    },
+    metamaskContent:{
+        textAlign:'left',
+        fontSize:14
     }
 }
 

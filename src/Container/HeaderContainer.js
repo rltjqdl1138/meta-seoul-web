@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-function HeaderContainer({setLoginModal}){
+function HeaderContainer({setLoginModal, auth}){
     return (
         <div style={styles.container}>
             <div className="hovered" style={styles.logoContainer}>
@@ -12,46 +12,53 @@ function HeaderContainer({setLoginModal}){
                     <div style={styles.navItemText}>
                         Buy Land
                     </div>
-                    <img style={styles.navItemImage} src="/arrow.png"/>
                 </div>
                 <div className="hovered" style={styles.navItemContainer}>
                     <div style={styles.navItemText}>
                         Marketplace
                     </div>
-                    <img style={styles.navItemImage} src="/arrow.png"/>
                 </div>
                 <div className="hovered" style={styles.navItemContainer}>
                     <div style={styles.navItemText}>
                         News
                     </div>
-                    <img style={styles.navItemImage} src="/arrow.png"/>
                 </div>
                 <div className="hovered" style={styles.navItemContainer}>
                     <div style={styles.navItemText}>
                         Community
                     </div>
-                    <img style={styles.navItemImage} src="/arrow.png"/>
                 </div>
                 <div className="hovered" style={styles.navItemContainer}>
                     <div style={styles.navItemText}>
                         Support
                     </div>
-                    <img style={styles.navItemImage} src="/arrow.png"/>
 
                 </div>
             </div>
-            <div style={styles.loginContainer}>
-                <div onClick={()=>setLoginModal(true)}
-                    className="hovered"
-                    style={styles.loginButton}>
-                    Login
-                </div>
-            </div>
+
+            {
+                auth.isLogined ?
+                (<div style={styles.loginContainer}>
+                    <div style={styles.profileContainer}>
+                        <img style={styles.profileImage} src="/profile.png" />
+                    </div>
+                </div>) :
+                (<div style={styles.loginContainer}>
+                    <div onClick={()=>setLoginModal(true)}
+                        className="hovered"
+                        style={styles.loginButton}>
+                        Login
+                    </div>
+                </div>)
+            }
+
+            {/*
             <div className="hovered" style={styles.menuboxContainer}>
                 <div style={{...styles.menuboxIconBox, marginBottom:6}} />
                 <div style={{...styles.menuboxIconBox, marginTop:6, marginBottom:6}} />
                 <div style={{...styles.menuboxIconBox, marginTop:6 }}/>
             </div>
+            */}
         </div>
     )
 }
@@ -105,15 +112,14 @@ const styles = {
 
     loginContainer:{
         width:90,
-        height:32,
+        height:42,
         marginLeft:35,
-        marginRight:35,
-        display:'inline-block',
-        marginTop:15,
+        display:'flex',
+        marginTop:10,
 
     },
     loginButton:{
-        height:'100%',
+        height:32,
         width:90,
         backgroundColor:"#405ca9",
         color:'#ffffff',
@@ -121,7 +127,15 @@ const styles = {
         borderRadius:16,
         paddingTop:5,
         paddingBottom:5,
-        margin: 'auto'
+        margin: 'auto',
+        marginTop:8,
+    },
+    profileContainer:{
+        flex:1
+    },
+    profileImage:{
+        width:42,
+        height:'100%'
     },
     menuboxContainer:{
         height:22,

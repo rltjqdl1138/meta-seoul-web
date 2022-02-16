@@ -17,7 +17,7 @@ class TileInfoComponent extends React.Component{
                             Nickname
                         </div>
                         <div style={styles.addressText}>
-                            metamask id
+                            {selectedElement.wallet}
                         </div>
                     </div>
                 </div>
@@ -41,9 +41,13 @@ class TileInfoComponent extends React.Component{
                             </div>
                         </div>
                         <div style={styles.tileInfoContent}>
-                            <div style={styles.titleInfoContentText}>
-                                {isEmpty ? "" : "115792089237316195423570985008687907824005701110439856181607367768781063454596"}
-                            </div>
+                            {isEmpty ? null : (
+                                <div style={{...styles.titleInfoContentText, fontSize:14}}>
+                                    <a target="_blank" href={"https://etherscan.io/token/0x"+selectedElement.asset_id.split(":")[0]}>
+                                        {selectedElement.asset_id}
+                                    </a>
+                                </div>
+                            )}
                         </div>
                         
                     </div>
@@ -55,7 +59,7 @@ class TileInfoComponent extends React.Component{
                         </div>
                         <div style={styles.tileInfoContent}>
                             <div style={styles.titleInfoContentText}>
-                                {isEmpty ? "" : "aa"}
+                                {isEmpty ? "" : selectedElement.location}
                             </div>
                         </div>
 
@@ -97,7 +101,7 @@ class TileInfoComponent extends React.Component{
                         </div>
                         <div style={styles.tileInfoContent}>
                             <div style={styles.titleInfoContentText}>
-                                {isEmpty ? "" : "4.5ETH"}
+                                {isEmpty ? "" : selectedElement.price + "ETH"}
                             </div>
                         </div>
                         
@@ -111,13 +115,13 @@ class TileInfoComponent extends React.Component{
                         </div>
                         <div style={styles.tileInfoContent}>
                             <div style={styles.titleInfoContentText}>
-                                {isEmpty ? "" : "4.7ETH"}
+                                {isEmpty ? "" : selectedElement.price + "ETH"}
                             </div>
                         </div>
                     </div>
                 </div>
                 <div style={styles.openSeaButtonContainer}>
-                    <a target="_blank" href="https://opensea.io/assets/0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d/115792089237316195423570985008687907824005701110439856181607367768781063454596">
+                    <a target="_blank" href="https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/5794962098794387521142323084786560340622945892957766951761762342183911827216">
                         <img className='hovered'
                             src="/open-sea-logo.png" style={styles.openSeaButton}/>
                     </a>
