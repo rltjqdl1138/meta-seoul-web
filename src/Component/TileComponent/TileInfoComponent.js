@@ -21,6 +21,7 @@ class TileInfoComponent extends React.Component{
                         </div>
                     </div>
                 </div>
+
                 <div style={styles.tileInfoContainer}>
                     <div className="titleInfo-border" style={{...styles.tileInfoItem, backgroundColor:"#f5f5f5"}}>
                         <div style={styles.tileInfoTitle}>

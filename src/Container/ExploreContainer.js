@@ -96,7 +96,7 @@ class MapContainer extends React.Component{
         list.forEach(element =>{
             if( selectedCells.find(element.id) === -1){
                 selectedCells.push(element,element.id)
-                historyItem.push(element.id)
+                historyItem.push({id:element.id, contract_id:element.contract_id})
             }
         })
         this.setState( state =>({

@@ -9,6 +9,8 @@ class LoginContainer extends React.Component{
         if(typeof window.ethereum !== undefined){
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             const account = accounts[0];
+            
+            
             console.log(account)
             //const nonce = tempNonce(user.nonce)
             //let sign = await window.web3.eth.personal.sign( nonce, account, "")

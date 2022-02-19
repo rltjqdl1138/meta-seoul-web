@@ -44,7 +44,6 @@ function MapComponent({onSelect, setProps, total}) {
 
         let isEffectX = lastCell.x === currentCell.properties.x ? false : true
         let isEffectY = lastCell.y === currentCell.properties.y ? false : true
-
         // 셀 진행 방향
         // 셀 
         if(isEffectX)
@@ -55,70 +54,223 @@ function MapComponent({onSelect, setProps, total}) {
                 don(loadedArea[currentArea.y][i], currentCell, 'y')
     }
     const don = (contract_id, currentCell, type)=>{
+        const first = contract_id === selectedCell.source ? true : false
         const me = contract_id === currentCell.source ? true : false
         if(contract_id === selectedCell.source);
 
         const firstArea = findArea(selectedCell.source)
         const currentArea = findArea(contract_id)
         const lastArea = findArea(lastCell.contract_id)
+        const endArea = findArea(currentCell.source)
 
         let {x:startX,y:startY} = selectedCell.properties
         const { x:endX,  y:endY } = currentCell.properties
         const {x:lastX, y:lastY } = lastCell
+        //console.log('======================================================')
         if(type === 'x'){
-            const AreaDirection = currentArea.x - firstArea.x
+            const AreaDirectionY = endArea.y - firstArea.y
+            const AreaDirection = endArea.x - firstArea.x
             const CellDirection = AreaDirection === 0 ? endX - startX : AreaDirection
-            const hoverDirection = currentArea.x - lastArea.x || endX - lastX
+            const hoverDirection = endArea.x - lastArea.x || endX - lastX
+            const hoverDirectionY = endArea.y - lastArea.y || endY - lastY
             const isExtendedX = CellDirection * hoverDirection > 0
-            const isOverArea = lastArea.x - currentArea.x
+            const isOverArea = endArea.x - lastArea.x
+            const isOverAreaY = endArea.y - lastArea.y
             const _end_x = isExtendedX ? endX : hoverDirection > 0 ? endX-1 : endX+1
             const _start_x = isOverArea!==0 ? (hoverDirection>0 ? 0 : 99) : (isExtendedX ? (hoverDirection>0 ? lastX+1 : lastX-1) : lastX)
-            const end_x = _end_x > _start_x ? _end_x : _start_x
+
+            const end_x = Math.min(_end_x > _start_x ? _end_x : _start_x, 99)
             const start_x = _end_x < _start_x ? _end_x : _start_x
-            const _start_y = firstArea.y === currentArea.y ? selectedCell.properties.y : 0
-            const _end_y = me ? (isExtendedX ? endY : lastY) : 99
+
+            let _start_y, _end_y
+            if(AreaDirectionY === 0){
+                _start_y = selectedCell.properties.y
+                _end_y = (isExtendedX ? endY : hoverDirectionY>0 ? Math.min(endY, lastY):Math.max(endY, lastY))
+            }
+            else if(firstArea.y === currentArea.y){
+                _start_y = AreaDirectionY > 0 ? 99 : 0
+                _end_y = startY
+            }else if(lastArea.y === currentArea.y){
+                _start_y = AreaDirectionY > 0 ? 0 : 99
+                _end_y = (isExtendedX ? endY : hoverDirectionY>0 ? Math.min(endY, lastY):Math.max(endY, lastY))
+            }else{
+                _start_y = 0
+                _end_y = 99
+            }
+
+
 
             const start_y = _end_y > _start_y ? _start_y : _end_y
             const end_y = _end_y < _start_y ? _start_y : _end_y
-
+            if(me && first && start_x <= startX && end_x >= startX){
+                /*
+                console.log(currentArea)
+                console.log({CellDirection, hoverDirection, isExtendedX,isOverArea,isOverAreaY})
+                console.log(selectedCell)
+                console.log(lastCell)
+                console.log(currentCell)
+                console.log(currentArea)
+                console.log(lastArea)
+                console.log(endArea)*/
+                const st_y = Math.min(lastY, startY, endY)
+                const en_y = Math.max(lastY, startY, endY)
+                if(hoverDirection > 0){
+                    console.log(`X:${start_x}~${end_x} Y:${start_y}~${end_y}`)
+                    console.log(`${start_x-1}~${startX-1}, ${st_y}~${en_y}`)
+                    console.log(`${startX}~${end_x},${start_y}~${end_y}`)
+                    console.log(startX, lastX, endX)
+                    console.log(startY, lastY, endY)
+                    SetSelection(contract_id, start_x-1, startX-1, st_y, en_y, false)
+                    SetSelection(contract_id, startX, end_x, start_y, end_y, true)
+                }
+                else{
+                    SetSelection(contract_id, startX+1, end_x+1, st_y, en_y, false)
+                    SetSelection(contract_id, start_x, startX, start_y, end_y, true)
+                }
+            }else
+                SetSelection(contract_id, start_x, end_x, start_y, end_y, isExtendedX)
+            //for(let i=start_x; i<=end_x; i++)
+            //    for(let j=start_y; j<=end_y; j++)
+            //        map.current.setFeatureState( { source: contract_id, id: i*100 + j },{ hover: isExtendedX } );
             
-            console.log(firstArea)
-            console.log(currentArea)
-            console.log(lastArea)
-            console.log({CellDirection, hoverDirection, isExtendedX,isOverArea,})
-            console.log(`X:${start_x}~${end_x} Y:${startY}~${endY}`)
-            for(let i=start_x; i<=end_x; i++)
-                for(let j=start_y; j<=end_y; j++)
-                    map.current.setFeatureState( { source: contract_id, id: i*100 + j },{ hover: isExtendedX } );
-
             
+            if(isOverArea < 0 && currentArea.x === lastArea.x-1){
+                const preCell = loadedArea[currentArea.y][lastArea.x]
+                if(!isExtendedX){
+                    for(let i=0; i<=lastX; i++)
+                        for(let j=start_y; j<=end_y; j++)
+                            map.current.setFeatureState( { source: preCell, id: i*100 + j },{ hover: false} );
+                }
+                else{
+                    for(let i=0; i<=lastX; i++)
+                        for(let j=start_y; j<=end_y; j++)
+                            map.current.setFeatureState( { source: preCell, id: i*100 + j },{ hover: true } );
+                }
+            }else if(isOverArea > 0 && currentArea.x === lastArea.x+1){
+                const preCell = loadedArea[currentArea.y][lastArea.x]
+                if(!isExtendedX){
+                    for(let i=lastX; i<=99; i++)
+                        for(let j=start_y; j<=end_y; j++)
+                            map.current.setFeatureState( { source: preCell, id: i*100 + j },{ hover: false } );
+                }
+                else{
+                    for(let i=lastX; i<=99; i++)
+                        for(let j=start_y; j<=end_y; j++)
+                            map.current.setFeatureState( { source: preCell, id: i*100 + j },{ hover: true} );   
+                } 
+            }else{
+            }
+
+
+        
         }
-        if(type === 'y'){
-            const AreaDirection = currentArea.y - firstArea.y
+        if( type === 'y'){
+            const AreaDirectionX = endArea.x - firstArea.x
+            const AreaDirection = endArea.y - firstArea.y
             const CellDirection = AreaDirection === 0 ? endY - startY : AreaDirection
-            const hoverDirection = currentArea.y - lastArea.y || endY - lastY
+            const hoverDirection = endArea.y - lastArea.y || endY - lastY
+            const hoverDirectionX = endArea.x - lastArea.x || endX - lastX
             const isExtendedY = CellDirection * hoverDirection > 0
-            const isOverArea = lastArea.y - currentArea.y
+            const isOverArea = endArea.y - lastArea.y
+            const isOverAreaX = endArea.x - lastArea.x
             const _end_y = isExtendedY ? endY : hoverDirection > 0 ? endY-1 : endY+1
-            const _start_y = isOverArea!==0 ? (hoverDirection>0 ? 0 : 99) : (isExtendedY ? (hoverDirection>0 ? lastY+1 : lastY-1) : lastY)
+            const _start_y = isOverArea!==0 ? (hoverDirection>0 ? 0 : 100) : (isExtendedY ? (hoverDirection>0 ? lastY+1 : lastY-1) : lastY)
+
             const end_y = _end_y > _start_y ? _end_y : _start_y
             const start_y = _end_y < _start_y ? _end_y : _start_y
-            const _start_x = firstArea.x === currentArea.x ? selectedCell.properties.x : 0
-            const _end_x = me ? (isExtendedY ? endX : lastX) : 99
 
-            const start_x= _end_x > _start_x ? _start_x : _end_x
+
+            let _start_x, _end_x
+            if(AreaDirectionX === 0){
+                _start_x = selectedCell.properties.x
+                _end_x = (isExtendedY ? endX : hoverDirectionX>0 ? Math.min(endX, lastX):Math.max(endX, lastX))
+            }
+            else if(firstArea.x === currentArea.x){
+                _start_x = AreaDirectionX > 0 ? 99 : 0
+                _end_x = startX
+            }else if(lastArea.x === currentArea.x){
+                _start_x = AreaDirectionX > 0 ? 0 : 99
+                _end_x =  (isExtendedY ? endX : hoverDirectionX>0 ? Math.min(endX, lastX):Math.max(endX, lastX))
+            }else{
+                _start_x = 0
+                _end_x = 99
+            }
+
+            const start_x = _end_x > _start_x ? _start_x : _end_x
             const end_x = _end_x < _start_x ? _start_x : _end_x
+
+            /*
+            console.log(currentArea)
+            console.log({CellDirection, hoverDirection, isExtendedY,isOverArea,isOverAreaX})
+            console.log(selectedCell)
+            console.log(lastCell)
+            console.log(currentCell)
+            console.log(currentArea)
+            console.log(lastArea)
+            console.log(endArea)
+            console.log(`X:${start_x}~${end_x} Y:${start_y}~${end_y}`)
+            */
             
+            if(me && first && start_y <= startY && end_y >= startY){
+                const st_x = Math.min(lastX, startX, endX)
+                const en_x = Math.max(lastX, startX, endX)
+                if(hoverDirection > 0){
+                    console.log(`${st_x-1}~${en_x}, ${start_y}~${startY-1}`)
+                    console.log(`${start_x}~${end_x},${startY}~${end_y}`)
+                    console.log(startX, lastX, endX)
+                    console.log(startY, lastY, endY)
+                    SetSelection(contract_id, st_x, en_x, start_y-1, startY-1,  false)
+                    SetSelection(contract_id, start_x, end_x, startY, end_y,  true)
+                }
+                else{
+                    SetSelection(contract_id, st_x, en_x, startY+1, end_y+1, false)
+                    SetSelection(contract_id, start_x, end_x, start_y, startY, true)
+                }
+            }else
+                SetSelection(contract_id, start_x, end_x, start_y, end_y, isExtendedY)
+
+            //for(let i=start_x; i<=end_x; i++)
+            //    for(let j=start_y; j<=Math.min(end_y,99); j++)
+            //        map.current.setFeatureState( { source: contract_id, id: i*100 + j },{ hover: isExtendedY } );
             
-            //
-            for(let x = start_x; x <= end_x; x++)
-                for(let y = start_y; y <= end_y; y++)
-                    map.current.setFeatureState( { source: contract_id, id: x*100 + y },{ hover: isExtendedY } );
+            const preCell = loadedArea[lastArea.y][currentArea.x]
+            if(isOverArea < 0 && currentArea.y === lastArea.y-1){
+                if(!isExtendedY){
+                    for(let j=0; j<=lastY; j++)
+                        for(let i=start_x; i<=end_x; i++)
+                            map.current.setFeatureState( { source: preCell, id: i*100 + j },{ hover: false} );
+                }
+                else{
+                    const preCell = loadedArea[lastArea.y][currentArea.x]
+                    for(let j=0; j<=lastY; j++)
+                        for(let i=start_x; i<=end_x; i++)
+                            map.current.setFeatureState( { source:preCell, id: i*100 + j },{ hover: true } );
+                }
+            }else if(isOverArea > 0 && currentArea.y === lastArea.y+1){
+                if(!isExtendedY){
+                    for(let j=lastY; j<=99; j++)
+                        for(let i=start_x; i<=end_x; i++)
+                            map.current.setFeatureState( { source: preCell, id: i*100 + j },{ hover: false } );
+                }
+                else{
+                    for(let j=lastY; j<=99; j++)
+                        for(let i=start_x; i<=end_x; i++)
+                            map.current.setFeatureState( { source:preCell, id: i*100 + j },{ hover: true} );    
+                }
+            }
+            
 
         }
         if(type === 'me'){
             console.log('me')
         }
+        
+        //console.log('======================================================')
+    }
+    const SetSelection = (contract_id, x1, x2, y1, y2, hover)=>{
+        for(let j=y1; j<=y2; j++)
+            for(let i=x1; i<=x2; i++)
+                map.current.setFeatureState( { source:contract_id, id: i*100 + j },{ hover} );    
     }
     const findArea = (contract_id)=>{
         for(let i=0; i<3; i++){
@@ -179,12 +331,6 @@ function MapComponent({onSelect, setProps, total}) {
             'line-width': 1
             }
         });
-        map.current.on('wheel', e=>{
-            setProps('zoom', map.current.getZoom().toFixed(4))
-        })
-        setProps("clearMap", (id)=>{
-            map.current.setFeatureState( { source:'2953399124f0cbb46d2cbacd8a89cf0599974963', id },{ hover: false, selected:false } );
-        })
         setProps("enableNotice", (source, id)=>{
             map.current.setFeatureState( { source, id },{ notice: false } );
         })
@@ -217,60 +363,7 @@ function MapComponent({onSelect, setProps, total}) {
                     
                     map.current.setFeatureState( { source: contract_id, id: currentCell.id },{ hover: true } );
                 }else{
-                    
                     moveEvent(currentCell)
-                    /*
-                    let {x:startX,y:startY} = selectedCell.properties
-                    if(selectedCell.source !== currentCell.source)
-                        startX=0
-                    const { x:endX,  y:endY } = e.features[0].properties
-                    const {x:lastX, y:lastY } = hoveredCell.properties
-                    const isExtendedX = Math.abs(startX - endX) - Math.abs(startX - lastX) > 0 ? true : false
-                    const isExtendedY = Math.abs(startY - endY) - Math.abs(startY - lastY) > 0 ? true : false
-                    const totalSelected = (Math.abs(startX-endX)+1)*(Math.abs(startY-endY)+1)
-                    setProps('tempCount', totalSelected)
-
-                    if (lastCell !== null){
-                        if(endX !== lastX && endY !== lastY){
-                            if( !isExtendedX && !isExtendedY )
-                                map.current.setFeatureState( { source: contract_id, id: lastX*100 + lastY },{ hover: false } );
-                        }
-                        if(endX !== lastX){
-                            const isExtended = isExtendedX
-                            
-                            const start_y = startY < endY ? startY : endY
-                            const end_y = startY < endY ? endY : startY
-
-                            const start_x = isExtended ? ( lastX < endX ? lastX : endX ) : ( lastX < endX ? lastX-1 : endX +1)
-                            const end_x = isExtended ?   ( lastX < endX ? endX : lastX-1 ) : ( lastX < endX ? endX: lastX )
-
-                            for(let y = start_y; y <= end_y; y++){
-                                for(let x = start_x; x <= end_x; x++)
-                                    map.current.setFeatureState( { source: contract_id, id: x*100 + y },{ hover: isExtended } );
-                                
-                            }
-                        }
-                        if(endY !== lastY){
-
-                            const isExtended = isExtendedY
-                            
-                            const start_x = startX < endX ? startX : endX
-                            const end_x = startX < endX ? endX : startX
-
-                            const start_y = isExtended ? ( lastY < endY ? lastY : endY ) : ( lastY < endY ? lastY-1 : endY +1)
-                            const end_y = isExtended ?   ( lastY < endY ? endY : lastY-1 ) : ( lastY < endY ? endY: lastY )
-
-                            for(let x = start_x; x <= end_x; x++){
-                                for(let y = start_y; y <= end_y; y++)
-                                    map.current.setFeatureState( { source: contract_id, id: x*100 + y },{ hover: isExtended } );
-                                
-                            }
-                        }
-                        hoveredStateId = e.features[0].id;
-                        //map.current.setFeatureState( { source: 'states', id: hoveredStateId },{ hover: true } );
-                    }
-
-*/
                 }
                 lastCell = {contract_id, id: e.features[0].id, x:e.features[0].properties.x, y:e.features[0].properties.y}
                 hoveredCell = e.features[0]
@@ -279,10 +372,8 @@ function MapComponent({onSelect, setProps, total}) {
 
         map.current.on('mouseleave', contract_id+'-fills', () => {
             if(!selectedCell){
-                if (hoveredStateId !== null) 
-                    map.current.setFeatureState({ source: contract_id, id: hoveredStateId }, { hover: false });
-                //hoveredStateId = null;
             }
+
         });
         
     }
@@ -304,32 +395,53 @@ function MapComponent({onSelect, setProps, total}) {
             }
 
 
+            map.current.on('wheel', e=>{
+                setProps('zoom', map.current.getZoom().toFixed(4))
+            })
+            setProps("clearMap", ({contract_id, id})=>{
+                map.current.setFeatureState( { source:contract_id, id },{ hover: false, selected:false } );
+            })
             
-        map.current.on('click', (e) => {
-            if(!selectedCell)
-                selectedCell = hoveredCell
-            else{
-                const {x:startX,y:startY} = selectedCell.properties
-                const {x:endX, y:endY } = hoveredCell.properties
-                const start_y = startY < endY ? startY : endY
-                const start_x = startX < endX ? startX : endX
-                const end_x = startX < endX ? endX : startX
-                const end_y = startY < endY ? endY : startY
-                const {source:contract_id} = selectedCell
-                const list = []
+            map.current.on('click', (e) => {
+                if(!selectedCell){
+                    selectedCell = hoveredCell
+                }
+                else{
+                    const {x:startX,y:startY} = selectedCell.properties
+                    const {x:endX, y:endY} = hoveredCell.properties
+                    const firstArea = findArea(selectedCell.source)
+                    const endArea = findArea(hoveredCell.source)
 
-                for(let x=start_x; x<=end_x; x++)
-                    for(let y=start_y; y<=end_y; y++){
-                        if( total() <= 200){
-                            map.current.setFeatureState( { source: contract_id, id: x*100 + y },{ hover: false, selected:true } );
-                            list.push({id:x*100+y, x, y})
-                        }else
-                            map.current.setFeatureState( { source: contract_id, id: x*100 + y },{ hover: false } );
-                    }
-                selectedCell = null
-                onSelect(list)
-            }
-        });
+
+
+                    const _start_x = startX + firstArea.x * 100
+                    const _start_y = startY + firstArea.y * 100
+
+                    const _end_x = endX + endArea.x * 100
+                    const _end_y = endY + endArea.y * 100
+                    
+                    const start_x = Math.min(_start_x, _end_x)
+                    const end_x = Math.max(_start_x, _end_x)
+                    const start_y = Math.min(_start_y, _end_y)
+                    const end_y = Math.max(_start_y, _end_y)
+
+                    const list = []
+
+                    for(let x=start_x; x<=end_x; x++)
+                        for(let y=start_y; y<=end_y; y++){
+                            const AreaX = x<100 ? 0 : x<200 ? 1 : 2
+                            const AreaY = y<100 ? 0 : y<200 ? 1 : 2
+                            const contract_id = loadedArea[AreaY][AreaX]
+                            if( total() <= 200){
+                                map.current.setFeatureState( { source: contract_id, id: (x%100)*100 + y%100 },{ hover: false, selected:true } );
+                                list.push({id: (x%100)*100 + y%100 , x, y, contract_id})
+                            }else
+                                map.current.setFeatureState( { source: contract_id, id: (x%100)*100 + y%100 },{ hover: false } );
+                        }
+                    selectedCell = null
+                    onSelect(list)
+                }
+            });
             //loadArea('d2F668a8461D6761115dAF8Aeb3cDf5F40C532C6')
             //loadArea('2953399124f0cbb46d2cbacd8a89cf0599974963')
             /*
