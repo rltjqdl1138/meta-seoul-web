@@ -31,10 +31,7 @@ class Queue{
         if (!contain) this.items.push(qElement);
     }
     del(priority){
-//        const ind = this.find(priority)
-//        if(ind === -1) return
         this.items.splice(this.find(priority), 1)
-        //this.items = [...this.items.slice(0,ind), ...this.items.slice(ind+1, this.items.length)]
     }
     
     find(priority){
@@ -98,7 +95,7 @@ class MapContainer extends React.Component{
         list.forEach(element =>{
             if( selectedCells.find(element.id) === -1){
                 selectedCells.push(element,element.id)
-                historyItem.push({id:element.id, contract_id:element.contract_id})
+                historyItem.push({id: element.id, contract_id:element.contract_id})
             }
         })
         this.setState( state =>({
@@ -108,11 +105,10 @@ class MapContainer extends React.Component{
             tempCount:0
         }))
     }
-    getTotal = ()=>{
-        return this.state.tempCount + this.state.selectedCells.items.length
-    }
+    getTotal = ()=> this.state.tempCount + this.state.selectedCells.items.length
+    
     selectBox = ()=>{
-        const {tempCount, selectedCells} = this.state
+        const {selectedCells} = this.state
         const selectedTotal = selectedCells.items.length
         const total = this.getTotal()
         return (
