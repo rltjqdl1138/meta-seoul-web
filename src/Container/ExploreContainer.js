@@ -31,9 +31,10 @@ class Queue{
         if (!contain) this.items.push(qElement);
     }
     del(priority){
-        const ind = this.find(priority)
-        if(ind === -1) return
-        this.items = [...this.items.slice(0,ind), ...this.items.slice(ind+1, this.items.length)]
+//        const ind = this.find(priority)
+//        if(ind === -1) return
+        this.items.splice(this.find(priority), 1)
+        //this.items = [...this.items.slice(0,ind), ...this.items.slice(ind+1, this.items.length)]
     }
     
     find(priority){
@@ -55,6 +56,7 @@ class MapContainer extends React.Component{
     constructor(props){
         super(props)
         const selectedCells = new Queue()
+
         this.state = {
             history:[],
             selectedCells,
@@ -81,7 +83,7 @@ class MapContainer extends React.Component{
 
         for(let i=0; i<lastHistory.length; i++){
             clearMap(lastHistory[i])
-            selectedCells.del(lastHistory[i])
+            selectedCells.del(lastHistory[i].id)
         }
 
         this.setState( state =>({
