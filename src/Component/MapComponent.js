@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import axios from 'axios'
 mapboxgl.accessToken = 'pk.eyJ1Ijoicmx0anFkbDExMzgiLCJhIjoiY2t6ZHVrOXFxMDZpODJ2cDJidHh2cmZ6aCJ9.N39L45pDFuKBS5OuX0GBXg';
 
 function MapComponent({onSelect, setProps, total}) {
@@ -12,25 +13,52 @@ function MapComponent({onSelect, setProps, total}) {
     
     let loadedArea = [
         [
-            '2A187453064356c898cAe034EAed119E1663ACb8',
-            '2953399124f0cbb46d2cbacd8a89cf0599974963',
-            '31d4C5be1082A88F2ABAFeA549B6C189C2cf057F',
         ],
         [
-            'F87E31492Faf9A91B02Ee0dEAAd50d51d56D5d4d',
-            'BD4455dA5929D5639EE098ABFaa3241e9ae111Af',
-            'd2F668a8461D6761115dAF8Aeb3cDf5F40C532C6',
         ],
         [   
-            '79986aF15539de2db9A5086382daEdA917A9CF0C',
-            '495f947276749Ce646f68AC8c248420045cb7b5e',
-            '6e4c6D9B0930073e958ABd2ABa516b885260b8Ff',
-            
         ],
     ]
     let lastCell = null
     let hoveredCell = null
     let selectedCell = null
+    const changeLocation = async (lng, lat)=>{
+        try{
+            const {data} = await axios.get(`/v1/area?lng=${lng}&lat=${lat}`)
+            const {list} = data
+            const loaded = loadedArea.flatMap(e=>e)
+
+            const newLoadedArea = [[],[],[]]
+            for(let i=0; i<3; i++)
+                for(let j=0; j<3; j++){
+                    if(!list[i][j]) continue;
+                    newLoadedArea[i][j] = list[i][j].contract_id
+                    try{
+                        const source = map.current.getSource(list[i][j].contract_id)
+                        if(!source){
+                            load(list[i][j].contract_id)
+                        }
+                        else{
+                            const ind = loaded.findIndex( e => e === list[i][j].contract_id)
+                            loaded.splice(ind, 1)
+                        }
+                    }
+                    catch(e){
+                    }
+                }
+            loadedArea = newLoadedArea
+            loaded.forEach( e => {
+                map.current.removeLayer(e+"-fills")
+                map.current.removeLayer(e+"-selected")
+                map.current.removeLayer(e+"-borders")
+
+                map.current.removeSource(e)
+            } )
+            //console.log(list)
+        }catch(e){
+            console.log(e)
+        }
+    }
     const moveEvent = (currentCell)=>{
         const currentArea = findArea(currentCell.source)
         const lastArea = findArea(lastCell.contract_id)
@@ -251,9 +279,6 @@ function MapComponent({onSelect, setProps, total}) {
             
 
         }
-        if(type === 'me'){
-            console.log('me')
-        }
         
         //console.log('======================================================')
     }
@@ -270,11 +295,12 @@ function MapComponent({onSelect, setProps, total}) {
         }
     }
 
-    const load = (contract_id)=>{
+    const load =(contract_id)=>{
         map.current.addSource(contract_id, {
             type:'geojson',
             data:`/${contract_id}.json`
         });
+            
         map.current.addLayer({
             id:         contract_id+'-fills',
             type:       'fill',
@@ -290,7 +316,6 @@ function MapComponent({onSelect, setProps, total}) {
                 ]
             }
         });
-        
         map.current.addLayer({
             id:         contract_id+'-selected',
             type:       'fill',
@@ -306,7 +331,7 @@ function MapComponent({onSelect, setProps, total}) {
                 ]
             }
         });
-            
+         
         map.current.addLayer({
             'id': contract_id+'-borders',
             'type': 'line',
@@ -317,6 +342,7 @@ function MapComponent({onSelect, setProps, total}) {
             'line-width': 1
             }
         });
+
         setProps("enableNotice", (source, id)=>{
             map.current.setFeatureState( { source, id },{ notice: false } );
         })
@@ -336,6 +362,7 @@ function MapComponent({onSelect, setProps, total}) {
         })
 
         map.current.on('mousemove', contract_id+'-fills', e => {
+            console.log(contract_id)
             if (e.features.length > 0) {
                 const currentCell = e.features[0]
 
@@ -373,13 +400,6 @@ function MapComponent({onSelect, setProps, total}) {
             zoom:     zoom
         });
         map.current.on('load',()=>{
-            for(let i=0; i<9; i++){
-                const x = i%3
-                const y = Math.floor(i/3,0)
-                const contractID = loadedArea[y][x]
-                load(contractID)
-            }
-
 
             map.current.on('wheel', e=>{
                 setProps('zoom', map.current.getZoom().toFixed(4))
@@ -388,6 +408,39 @@ function MapComponent({onSelect, setProps, total}) {
                 console.log(contract_id, id)
                 map.current.setFeatureState( { source:contract_id, id },{ hover: false, selected:false } );
             })
+                
+            map.current.on('moveend', ({target})=>{
+                const {lng, lat} = target.transform._center
+                changeLocation(lng, lat)
+            })
+    
+            map.current.addSource('jungu', {
+                type:'geojson',
+                data:`/jungu.json`
+            });
+            map.current.addLayer({
+                id:         'jungu-fills',
+                type:       'fill',
+                source:     'jungu',
+                layout:     {},
+                paint:      {
+                    'fill-color': '#800000',//'#627BC1',
+                    'fill-opacity': 0.1
+                }
+            });
+            
+            map.current.addLayer({
+                'id': 'jungu-borders',
+                'type': 'line',
+                source:     'jungu',
+                'layout': {},
+                'paint': {
+                'line-color': '#800000',
+                'line-width': 1
+                }
+            });
+
+
             
             map.current.on('click', (e) => {
                 if(!selectedCell){
