@@ -11,14 +11,7 @@ function MapComponent({onSelect, setProps, total}) {
     const [lat, setLat] = useState(37.56667);
     const [zoom, setZoom] = useState(15);
     
-    let loadedArea = [
-        [
-        ],
-        [
-        ],
-        [   
-        ],
-    ]
+    let loadedArea = [ [ ], [ ], [ ], ]
     let lastCell = null
     let hoveredCell = null
     let selectedCell = null
@@ -54,7 +47,6 @@ function MapComponent({onSelect, setProps, total}) {
 
                 map.current.removeSource(e)
             } )
-            //console.log(list)
         }catch(e){
             console.log(e)
         }
@@ -71,8 +63,7 @@ function MapComponent({onSelect, setProps, total}) {
 
         let isEffectX = lastCell.x === currentCell.properties.x ? false : true
         let isEffectY = lastCell.y === currentCell.properties.y ? false : true
-        // 셀 진행 방향
-        // 셀 
+
         if(isEffectX)
             for(let j=startY; j<=endY; j++)
                 don(loadedArea[j][currentArea.x], currentCell, 'x')
@@ -92,7 +83,7 @@ function MapComponent({onSelect, setProps, total}) {
         let {x:startX,y:startY} = selectedCell.properties
         const { x:endX,  y:endY } = currentCell.properties
         const {x:lastX, y:lastY } = lastCell
-        //console.log('======================================================')
+
         if(type === 'x'){
             const AreaDirectionY = endArea.y - firstArea.y
             const AreaDirection = endArea.x - firstArea.x
@@ -129,23 +120,9 @@ function MapComponent({onSelect, setProps, total}) {
             const start_y = _end_y > _start_y ? _start_y : _end_y
             const end_y = _end_y < _start_y ? _start_y : _end_y
             if(me && first && start_x <= startX && end_x >= startX){
-                /*
-                console.log(currentArea)
-                console.log({CellDirection, hoverDirection, isExtendedX,isOverArea,isOverAreaY})
-                console.log(selectedCell)
-                console.log(lastCell)
-                console.log(currentCell)
-                console.log(currentArea)
-                console.log(lastArea)
-                console.log(endArea)*/
                 const st_y = Math.min(lastY, startY, endY)
                 const en_y = Math.max(lastY, startY, endY)
                 if(hoverDirection > 0){
-                    console.log(`X:${start_x}~${end_x} Y:${start_y}~${end_y}`)
-                    console.log(`${start_x-1}~${startX-1}, ${st_y}~${en_y}`)
-                    console.log(`${startX}~${end_x},${start_y}~${end_y}`)
-                    console.log(startX, lastX, endX)
-                    console.log(startY, lastY, endY)
                     SetSelection(contract_id, start_x-1, startX-1, st_y, en_y, false)
                     SetSelection(contract_id, startX, end_x, start_y, end_y, true)
                 }
@@ -220,27 +197,11 @@ function MapComponent({onSelect, setProps, total}) {
 
             const start_x = _end_x > _start_x ? _start_x : _end_x
             const end_x = _end_x < _start_x ? _start_x : _end_x
-
-            /*
-            console.log(currentArea)
-            console.log({CellDirection, hoverDirection, isExtendedY,isOverArea,isOverAreaX})
-            console.log(selectedCell)
-            console.log(lastCell)
-            console.log(currentCell)
-            console.log(currentArea)
-            console.log(lastArea)
-            console.log(endArea)
-            console.log(`X:${start_x}~${end_x} Y:${start_y}~${end_y}`)
-            */
             
             if(me && first && start_y <= startY && end_y >= startY){
                 const st_x = Math.min(lastX, startX, endX)
                 const en_x = Math.max(lastX, startX, endX)
                 if(hoverDirection > 0){
-                    console.log(`${st_x-1}~${en_x}, ${start_y}~${startY-1}`)
-                    console.log(`${start_x}~${end_x},${startY}~${end_y}`)
-                    console.log(startX, lastX, endX)
-                    console.log(startY, lastY, endY)
                     SetSelection(contract_id, st_x, en_x, start_y-1, startY-1,  false)
                     SetSelection(contract_id, start_x, end_x, startY, end_y,  true)
                 }
@@ -280,7 +241,6 @@ function MapComponent({onSelect, setProps, total}) {
 
         }
         
-        //console.log('======================================================')
     }
     const SetSelection = (contract_id, x1, x2, y1, y2, hover)=>{
         for(let j=y1; j<=y2; j++)
@@ -362,7 +322,6 @@ function MapComponent({onSelect, setProps, total}) {
         })
 
         map.current.on('mousemove', contract_id+'-fills', e => {
-            console.log(contract_id)
             if (e.features.length > 0) {
                 const currentCell = e.features[0]
 
@@ -405,7 +364,6 @@ function MapComponent({onSelect, setProps, total}) {
                 setProps('zoom', map.current.getZoom().toFixed(4))
             })
             setProps("clearMap", ({contract_id, id})=>{
-                console.log(contract_id, id)
                 map.current.setFeatureState( { source:contract_id, id },{ hover: false, selected:false } );
             })
                 
