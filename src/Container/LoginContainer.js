@@ -1,5 +1,6 @@
 import React, { StyleSheet, useRef, useEffect, useState } from 'react';
 
+import axios from 'axios'
 
 class LoginContainer extends React.Component{
     constructor(props){
@@ -10,12 +11,13 @@ class LoginContainer extends React.Component{
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             const account = accounts[0];
             
-            
-            console.log(account)
-            //const nonce = tempNonce(user.nonce)
-            //let sign = await window.web3.eth.personal.sign( nonce, account, "")
+            let nonce = "asdfasdf"
+            let sign = await window.web3.eth.personal.sign( nonce, account, "")
+            const {data} = await axios.post('/v1/auth/metamask?sign='+sign)
 
-            this.props.SetState('auth',{isLogined: true, address:account})
+            const accessToken = data.access_token
+
+            this.props.SetState('auth',{isLogined: true, address:account, accessToken})
             this.props.setLoginModal(false)
         }
     }

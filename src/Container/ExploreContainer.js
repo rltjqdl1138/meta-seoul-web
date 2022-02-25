@@ -1,5 +1,6 @@
 import React from 'react';
-import MapComponent from '../Component/MapComponent';
+//import MapComponent from '../Component/MapComponent';
+import MapComponent from '../Component/MapFindComponent';
 import TileComponent from '../Component/TileComponent';
 class QueueItem {
     constructor(element, priority){
