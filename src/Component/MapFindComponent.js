@@ -12,11 +12,60 @@ function MapComponent({onSelect, setProps, total}) {
     const [zoom, setZoom] = useState(15);
     let selected = []
     let history = []
+    let markers = []
     let seq = 0
     let lastSeq = null
+    const saveToFile = async ()=>{
+        const date = Date.now()
+        const FeatureCollection = {
+            type: 'geojson',
+            data:{
+                "type": "FeatureCollection",
+                "features":[]
+            }
+        }
+
+        for( let ind in history){
+            const item = history[ind]
+            const center = item.geometry.coordinates[0].reduce((prev, e)=>{
+                const [lng, lat] = e
+                prev.lng = prev.lng + lng
+                prev.lat = prev.lat + lat
+                return prev
+            },{lng:0, lat:0})
+
+            const count = item.geometry.coordinates[0].length
+            center.lng = center.lng / count
+            center.lat = center.lat / count
+
+            const feature = {
+                "id": `${date}-${ind}`,
+                "type":"Feature",
+                "properties":{
+                    center:[center.lng, center.lat]
+                },
+                "geometry":{
+                    "type":"Polygon",
+                    "coordinates":item.geometry.coordinates 
+                },
+            }
+            FeatureCollection.data.features.push(feature)
+        }
+        const {data} = await  axios.post('/v1/area', FeatureCollection, {
+            "Content-Type" : "application/json"
+        })
+        const source = map.current.getSource('preload')
+        source.setData(data.data)
+        const current = map.current.getSource('currentLoad')
+        current.setData({
+            "type": "FeatureCollection",
+            "features":[]
+        })
+    }
     const register = (coordinates)=>{
+        markers.forEach( e => e.remove() )
         const featrue = {
-            "id": seq,
+            "id": seq++,
             "type":"Feature",
             "properties":{},
             "geometry":{
@@ -25,138 +74,143 @@ function MapComponent({onSelect, setProps, total}) {
             },
         }
         history.push(featrue)
-        const prev = map.current.getSource(String(seq))
-        prev && map.current.removeSource(seq)
-        seq = seq+1
-        const id = String(seq)
+        const prev = map.current.getSource("currentLoad")
+        !prev ? map.current.addSource('currentLoad',{
+                type: 'geojson',
+                data:{
+                    "type": "FeatureCollection",
+                    "features":history
+                }
+            }) :
+            prev.setData({
+                "type":     "FeatureCollection",
+                "features": history
+            })
 
-        map.current.addSource(id,{
-            type: 'geojson',
-            data:{
-                "type": "FeatureCollection",
-                "features":history
-            }
-        })
+        if(!prev){
+
+            map.current.addLayer({
+                id:         'current-fills',
+                type:       'fill',
+                source:     'currentLoad',
+                layout:     {},
+                paint:      {
+                    'fill-color': '#627BC1',//'#627BC1',
+                    'fill-opacity': [
+                        'case',
+                        ['boolean', ['feature-state', 'hover'], false],
+                        0.7,
+                        0.2
+                    ]
+                }
+            });
+            
+            map.current.addLayer({
+                'id': 'current-borders',
+                'type': 'line',
+                'source':     'currentLoad',
+                'layout': {},
+                'paint': {
+                    'line-color': '#627BC1',
+                    'line-width': 1
+                }
+            });
         
-        map.current.addLayer({
-            id:         id+'-fills',
-            type:       'fill',
-            source:     id,
-            layout:     {},
-            paint:      {
-                'fill-color': '#700000',//'#627BC1',
-                'fill-opacity': [
-                    'case',
-                    ['boolean', ['feature-state', 'hover'], false],
-                    1.0,
-                    0.2
-                ]
-            }
-        });
+            map.current.on('mousemove', 'current-fills', e => {
+                if (e.features.length > 0) {
+                    const currentCell =  e.features[0]
+                    lastSeq = currentCell.id
+                    map.current.setFeatureState( { source:'currentLoad', id:currentCell.id }, { hover: true } );
+                        
+                }
+            });
+            map.current.on('mouseleave', 'current-fills', () => {
+                if(lastSeq !== null)
+                    map.current.setFeatureState( { source:'currentLoad', id:lastSeq }, { hover: false } );
+                lastSeq = null
+            });
+        }
+
         
-        map.current.addLayer({
-            'id': id+'-borders',
-            'type': 'line',
-            'source': id,
-            'layout': {},
-            'paint': {
-                'line-color': '#627BC1',
-                'line-width': 1
-            }
-        });
-        
-        map.current.on('mousemove', id+'-fills', e => {
-            if (e.features.length > 0) {
-                const currentCell =  e.features[0]
-                lastSeq = currentCell.id
-                map.current.setFeatureState( { source:id, id:currentCell.id }, { hover: true } );
-                    
-            }
-        });
-        map.current.on('mouseleave', id+'-fills', () => {
-            if(lastSeq !== null)
-                map.current.setFeatureState( { source:id, id:lastSeq }, { hover: false } );
-            lastSeq = null
-        });
         
     }
     
     const undo = ()=>{
         if(history.length === 0) return;
         history = history.slice(0, history.length-1)
-        console.log(seq)
-        map.current.removeLayer(String(seq)+'-fills')
-        map.current.removeLayer(String(seq)+'-borders')
-
-        map.current.removeSource(String(seq))
-
-        seq = seq - 1
-        const id = String(seq)
-
-        map.current.addSource(id,{
-            type: 'geojson',
-            data:{
-                "type": "FeatureCollection",
-                "features":history
-            }
+        
+        const source = map.current.getSource('currentLoad')
+        source.setData({
+            "type": "FeatureCollection",
+            "features":history
         })
-
-        map.current.addLayer({
-            id:         id+'-fills',
-            type:       'fill',
-            source:     id,
-            layout:     {},
-            paint:      {
-                'fill-color': '#700000',//'#627BC1',
-                'fill-opacity': [
-                    'case',
-                    ['boolean', ['feature-state', 'hover'], false],
-                    1.0,
-                    0.2
-                ]
-            }
-        });
-        map.current.addLayer({
-            'id': id+'-borders',
-            'type': 'line',
-            'source': id,
-            'layout': {},
-            'paint': {
-                'line-color': '#627BC1',
-                'line-width': 1
-            }
-        });
-        
-        map.current.on('mousemove', id+'-fills', e => {
-            if (e.features.length > 0) {
-                const currentCell =  e.features[0]
-                lastSeq = currentCell.id
-                map.current.setFeatureState( { source:id, id:currentCell.id }, { hover: true } );
-                    
-            }
-        });
-        map.current.on('mouseleave', id+'-fills', () => {
-            if(lastSeq !== null)
-                map.current.setFeatureState( { source:id, id:lastSeq }, { hover: false } );
-            lastSeq = null
-        });
-        
     }
+    const preLoad = async()=>{
+
+
+        const {data} = await  axios.get('/v1/area', {
+            "Content-Type" : "application/json"
+        })
+        let ss = map.current.getSource('preload')
+        if( !ss ) map.current.addSource('preload', data)
+        else ss.setData(data);
+
+        if(!ss){
+            map.current.addLayer({
+                id:         'preload-fills',
+                type:       'fill',
+                source:     'preload',
+                layout:     {},
+                paint:      {
+                    'fill-color': '#627BC1',//'#627BC1',
+                    'fill-opacity': [
+                        'case',
+                        ['boolean', ['feature-state', 'hover'], false],
+                        0.7,
+                        0.2
+                    ]
+                }
+            });
+            
+            map.current.addLayer({
+                'id': 'preload-borders',
+                'type': 'line',
+                'source': 'preload',
+                'layout': {},
+                'paint': {
+                    'line-color': '#627BC1',
+                    'line-width': 1
+                }
+            });
+        }
+    }
+    
+    const styles = [
+        'mapbox://styles/mapbox/streets-v11',
+        'mapbox://styles/mapbox/outdoors-v11',
+        "mapbox://styles/mapbox/light-v10",
+        "mapbox://styles/mapbox/dark-v10",
+        'mapbox://styles/mapbox/satellite-v9',
+        'mapbox://styles/mapbox/satellite-streets-v11',
+        'mapbox://styles/mapbox/navigation-day-v1',
+        'mapbox://styles/mapbox/navigation-night-v1',
+    ]
     useEffect(() => {
         if (map.current) return;
         map.current = new mapboxgl.Map({
             container:mapContainer.current,
-            style:    'mapbox://styles/mapbox/streets-v11',
+            style:   styles[0],
             doubleClickZoom:false,
             center:   [lng, lat],
             zoom:     zoom
         });
         map.current.on('load',()=>{
-            
+            preLoad()
             window.addEventListener('keydown', function(event) {
                 const key = event.key;
                 switch(key){
                     case 'd':
+                        markers.forEach(e => e.remove())
                         selected = []
                         break;
                     case 's':
@@ -166,36 +220,13 @@ function MapComponent({onSelect, setProps, total}) {
                     case 'z':
                         undo()
                         break;
+                    case 'Enter':
+                        saveToFile()
+                        break;
+                    default:
+                        console.log(key)
                 }
             });
-                
-            /*
-            map.current.addSource('jungu', {
-                type:'geojson',
-                data:`/jungu.json`
-            });
-
-            map.current.addLayer({
-                id:         'jungu-fills',
-                type:       'fill',
-                source:     'jungu',
-                layout:     {},
-                paint:      {
-                    'fill-color': '#800000',//'#627BC1',
-                    'fill-opacity': 0.1
-                }
-            });
-            
-            map.current.addLayer({
-                'id':   'jungu-borders',
-                'type': 'line',
-                source: 'jungu',
-                'layout': {},
-                'paint': {
-                    'line-color': '#800000',
-                    'line-width': 1
-                }
-            });*/
 
             map.current.on('click', e => {
                 if(lastSeq !== null){
@@ -203,6 +234,10 @@ function MapComponent({onSelect, setProps, total}) {
                 }else{
                     const {lng, lat} = e.lngLat
                     selected.push([lng,lat])
+                    const marker = new mapboxgl.Marker()
+                        .setLngLat([lng, lat])
+                        .addTo(map.current);
+                    markers.push(marker)
                 }
                 
             });
