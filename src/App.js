@@ -1,10 +1,12 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React  from 'react';
-import ExploreContainer from './Container/ExploreContainer'
 import HeaderContainer from './Container/HeaderContainer';
 import LoginContainer from './Container/LoginContainer'
+import ExploreContainer from './Container/ExploreContainer'
+import UploadContainer from './Container/UploadContainer'
 
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 class App extends React.Component {
     constructor(props){
@@ -26,24 +28,43 @@ class App extends React.Component {
     
     render(){
         return (
-            <div className="App">
-                <HeaderContainer
-                    auth={this.state.auth}
-                    setLoginModal={this.setLoginModal}
-                />
-                <div style={{overflowY: this.state.isDisableLoginModal ? '' : 'hidden'}}>
-                    <ExploreContainer />
-                    <LoginContainer
+            <div className="app">
+                <BrowserRouter>
+                    <HeaderContainer
                         auth={this.state.auth}
-                        isDisableLoginModal={this.state.isDisableLoginModal}
-                        SetState={this.SetState}
                         setLoginModal={this.setLoginModal}
                     />
-                </div>
+                    <Routes>
+                        <Route path="/">
+                            <Route index element={<div />} />
+                            <Route path="1" element={<div />} />
+                            <Route path="2" element={<UploadContainer />} />
+                            <Route path="3" element={<div />} />
+                        </Route>
+                    </Routes>
+                </BrowserRouter>
+                
             </div>
         );
     }
 }
 
+/*
+<div className="App">
+<HeaderContainer
+    auth={this.state.auth}
+    setLoginModal={this.setLoginModal}
+/>
+<MainPageContainer />
+<div style={{overflowY: this.state.isDisableLoginModal ? '' : 'hidden'}}>
+
+    <LoginContainer
+        auth={this.state.auth}
+        isDisableLoginModal={this.state.isDisableLoginModal}
+        SetState={this.SetState}
+        setLoginModal={this.setLoginModal}
+    />
+</div>
+</div>*/
 
 export default App;

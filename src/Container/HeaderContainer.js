@@ -1,40 +1,51 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 function HeaderContainer({setLoginModal, auth}){
     return (
         <div style={styles.container}>
-            <div className="hovered" style={styles.logoContainer}>
-                <img style={styles.logoImage} src="/logo.png"/>
-            </div>
-            <div className="nav-container" style={styles.navContainer}>
-                <div className="hovered" style={styles.navItemContainer} >
-                    <div style={styles.navItemText}>
-                        Buy Land
-                    </div>
+            <Link to="">
+                <div className="hovered" style={styles.logoContainer}>
+                    <img style={styles.logoImage} src="/logo.png"/>
                 </div>
-                <div className="hovered" style={styles.navItemContainer}>
-                    <div style={styles.navItemText}>
-                        Marketplace
+            </Link>
+            <nav className="nav-container" style={styles.navContainer}>
+                <Link to="1">
+                    <div className="hovered" style={styles.navItemContainer} >
+                        <div style={styles.navItemText}>
+                            Buy Land
+                        </div>
                     </div>
-                </div>
-                <div className="hovered" style={styles.navItemContainer}>
-                    <div style={styles.navItemText}>
-                        News
+                </Link>
+                <Link to="2">
+                    <div className="hovered" style={styles.navItemContainer}>
+                        <div style={styles.navItemText}>Marketplace
+                        </div>
                     </div>
-                </div>
-                <div className="hovered" style={styles.navItemContainer}>
-                    <div style={styles.navItemText}>
-                        Community
+                </Link>
+                <Link to="3">
+                    <div className="hovered" style={styles.navItemContainer}>
+                        <div style={styles.navItemText}> 
+                            News
+                        </div>
                     </div>
-                </div>
-                <div className="hovered" style={styles.navItemContainer}>
-                    <div style={styles.navItemText}>
-                        Support
+                </Link>
+                <Link to="4">
+                    <div className="hovered" style={styles.navItemContainer}>
+                        <div style={styles.navItemText}>
+                            Community
+                        </div>
                     </div>
-
-                </div>
-            </div>
+                </Link>
+                <Link to="5">
+                    <div className="hovered" style={styles.navItemContainer}>
+                        <div style={styles.navItemText}>
+                            Support
+                        </div>
+                    </div>
+                </Link>
+            </nav>
 
             {
                 auth.isLogined ?

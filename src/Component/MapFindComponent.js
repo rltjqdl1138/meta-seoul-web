@@ -10,20 +10,127 @@ function MapComponent({onSelect, setProps, total}) {
     const [lng, setLng] = useState(126.97841);
     const [lat, setLat] = useState(37.56667);
     const [zoom, setZoom] = useState(15);
+
+    let seq = 0
+    let hoveredCellID = null
+
     let selected = []
     let history = []
     let markers = []
-    let seq = 0
-    let lastSeq = null
-    const saveToFile = async ()=>{
-        const date = Date.now()
-        const FeatureCollection = {
-            type: 'geojson',
-            data:{
-                "type": "FeatureCollection",
-                "features":[]
-            }
+
+
+    useEffect(() => {
+        if (map.current) return;
+        map.current = new mapboxgl.Map({
+            container: mapContainer.current,
+            style:     styles[0],
+            doubleClickZoom: false,
+            center:   [lng, lat],
+            zoom:     zoom
+        });
+
+        map.current.on('load',()=>{
+            LoadLayer()
+            update()
+            keyboardEvent()
+            mouseEvent()
+        })
+    });
+    
+    /*
+     * 1. Initialize
+    **/
+    function LoadLayer(){
+        map.current.addSource('preload', DEFAULT_SOURCE)
+        map.current.addLayer(PRELOAD_FILL_LAYER);
+        map.current.addLayer(PRELOAD_BORDER_LAYER);
+
+        map.current.addSource('current', DEFAULT_SOURCE)
+        map.current.addLayer(CURRENT_FILL_LAYER);
+        map.current.addLayer(CURRENT_BORDER_LAYER);
+        
+        map.current.on('mousemove', 'current-fills', e => {
+            if(e.features.length === 0) return;
+            if(hoveredCellID !== null)
+                    map.current.setFeatureState( { source:'current', id:hoveredCellID }, { hover: false } );
+            map.current.setFeatureState( { source:'current', id:(hoveredCellID = e.features[0].id)}, { hover: true } );
+            
+        });
+        map.current.on('mouseleave', 'current-fills', () => {
+            if(hoveredCellID !== null)
+                map.current.setFeatureState( { source:'current', id:hoveredCellID }, { hover: false } );
+            hoveredCellID = null
+        });
+    } 
+   function keyboardEvent(){
+       window.addEventListener('keydown',({key})=>{
+           switch(key){
+               case 'd':       del(); break;
+               case 's':       add(selected); break;
+               case 'z':       undo(); break;
+               case 'Enter':   upload(); break;
+           }
+       });
+   }
+   
+   function mouseEvent(){
+       map.current.on('click', e => {
+           if(hoveredCellID !== null){
+               console.log(history[hoveredCellID])
+           }
+           else{
+               const {lng, lat} = e.lngLat
+               selected.push([lng,lat])
+               const marker = new mapboxgl.Marker()
+                   .setLngLat([lng, lat])
+                   .addTo(map.current);
+               markers.push(marker)
+           }
+           
+       });
+   }
+
+    /*
+     * 2. Local functions
+    **/
+    function add(coordinates){
+        const featrue = {
+            id:     seq++,
+            type:   "Feature",
+            properties:{ },
+            geometry:{
+                type:   "Polygon",
+                coordinates:[ [...coordinates, coordinates[0]] ]
+            },
         }
+        
+        history.push(featrue)
+        map.current.getSource("current").setData({ type:"FeatureCollection", features:history})
+
+        markers.forEach( e => e.remove() )
+        selected = []
+    }
+
+    function undo(){
+        if(history.length === 0) return;
+        map.current.getSource('current').setData({
+            "type": "FeatureCollection",
+            "features": history = history.slice(0, history.length-1)
+        })
+    }
+
+    function del(){
+        markers.forEach(e => e.remove())
+        selected = []
+    }
+
+    /*
+     * 3. Upload / Download
+    **/
+    async function upload(){
+        if( !window.confirm(`타일 ${history.length}개를 업로드합니다.`) ) return;
+        const date = Date.now()
+        const FeatureCollection = {...DEFAULT_SOURCE}
 
         for( let ind in history){
             const item = history[ind]
@@ -39,216 +146,98 @@ function MapComponent({onSelect, setProps, total}) {
             center.lat = center.lat / count
 
             const feature = {
-                "id": `${date}-${ind}`,
-                "type":"Feature",
-                "properties":{
+                id: `${date}-${ind}`,
+                type: "Feature",
+                properties:{
                     center:[center.lng, center.lat]
                 },
-                "geometry":{
-                    "type":"Polygon",
-                    "coordinates":item.geometry.coordinates 
-                },
+                geometry:{ type:"Polygon", coordinates:item.geometry.coordinates },
             }
             FeatureCollection.data.features.push(feature)
         }
-        const {data} = await  axios.post('/v1/area', FeatureCollection, {
-            "Content-Type" : "application/json"
-        })
+        const {data:body} = await  axios.post('/v1/area', FeatureCollection, { "Content-Type" : "application/json" })
+        history = []
+        map.current.getSource('preload').setData(body.data)
+        map.current.getSource('current').setData({"type": "FeatureCollection","features":[]})
+    }
+
+    async function update(){
+        const {data:body} = await  axios.get('/v1/area', { "Content-Type" : "application/json" })
         const source = map.current.getSource('preload')
-        source.setData(data.data)
-        const current = map.current.getSource('currentLoad')
-        current.setData({
-            "type": "FeatureCollection",
-            "features":[]
-        })
+        source.setData( body.data )
     }
-    const register = (coordinates)=>{
-        markers.forEach( e => e.remove() )
-        const featrue = {
-            "id": seq++,
-            "type":"Feature",
-            "properties":{},
-            "geometry":{
-                "type":"Polygon",
-                "coordinates":[ [...coordinates, coordinates[0]] ]
-            },
-        }
-        history.push(featrue)
-        const prev = map.current.getSource("currentLoad")
-        !prev ? map.current.addSource('currentLoad',{
-                type: 'geojson',
-                data:{
-                    "type": "FeatureCollection",
-                    "features":history
-                }
-            }) :
-            prev.setData({
-                "type":     "FeatureCollection",
-                "features": history
-            })
 
-        if(!prev){
-
-            map.current.addLayer({
-                id:         'current-fills',
-                type:       'fill',
-                source:     'currentLoad',
-                layout:     {},
-                paint:      {
-                    'fill-color': '#627BC1',//'#627BC1',
-                    'fill-opacity': [
-                        'case',
-                        ['boolean', ['feature-state', 'hover'], false],
-                        0.7,
-                        0.2
-                    ]
-                }
-            });
-            
-            map.current.addLayer({
-                'id': 'current-borders',
-                'type': 'line',
-                'source':     'currentLoad',
-                'layout': {},
-                'paint': {
-                    'line-color': '#627BC1',
-                    'line-width': 1
-                }
-            });
-        
-            map.current.on('mousemove', 'current-fills', e => {
-                if (e.features.length > 0) {
-                    const currentCell =  e.features[0]
-                    lastSeq = currentCell.id
-                    map.current.setFeatureState( { source:'currentLoad', id:currentCell.id }, { hover: true } );
-                        
-                }
-            });
-            map.current.on('mouseleave', 'current-fills', () => {
-                if(lastSeq !== null)
-                    map.current.setFeatureState( { source:'currentLoad', id:lastSeq }, { hover: false } );
-                lastSeq = null
-            });
-        }
-
-        
-        
-    }
-    
-    const undo = ()=>{
-        if(history.length === 0) return;
-        history = history.slice(0, history.length-1)
-        
-        const source = map.current.getSource('currentLoad')
-        source.setData({
-            "type": "FeatureCollection",
-            "features":history
-        })
-    }
-    const preLoad = async()=>{
-
-
-        const {data} = await  axios.get('/v1/area', {
-            "Content-Type" : "application/json"
-        })
-        let ss = map.current.getSource('preload')
-        if( !ss ) map.current.addSource('preload', data)
-        else ss.setData(data);
-
-        if(!ss){
-            map.current.addLayer({
-                id:         'preload-fills',
-                type:       'fill',
-                source:     'preload',
-                layout:     {},
-                paint:      {
-                    'fill-color': '#627BC1',//'#627BC1',
-                    'fill-opacity': [
-                        'case',
-                        ['boolean', ['feature-state', 'hover'], false],
-                        0.7,
-                        0.2
-                    ]
-                }
-            });
-            
-            map.current.addLayer({
-                'id': 'preload-borders',
-                'type': 'line',
-                'source': 'preload',
-                'layout': {},
-                'paint': {
-                    'line-color': '#627BC1',
-                    'line-width': 1
-                }
-            });
-        }
-    }
-    
-    const styles = [
-        'mapbox://styles/mapbox/streets-v11',
-        'mapbox://styles/mapbox/outdoors-v11',
-        "mapbox://styles/mapbox/light-v10",
-        "mapbox://styles/mapbox/dark-v10",
-        'mapbox://styles/mapbox/satellite-v9',
-        'mapbox://styles/mapbox/satellite-streets-v11',
-        'mapbox://styles/mapbox/navigation-day-v1',
-        'mapbox://styles/mapbox/navigation-night-v1',
-    ]
-    useEffect(() => {
-        if (map.current) return;
-        map.current = new mapboxgl.Map({
-            container:mapContainer.current,
-            style:   styles[0],
-            doubleClickZoom:false,
-            center:   [lng, lat],
-            zoom:     zoom
-        });
-        map.current.on('load',()=>{
-            preLoad()
-            window.addEventListener('keydown', function(event) {
-                const key = event.key;
-                switch(key){
-                    case 'd':
-                        markers.forEach(e => e.remove())
-                        selected = []
-                        break;
-                    case 's':
-                        register(selected)
-                        selected = []
-                        break;
-                    case 'z':
-                        undo()
-                        break;
-                    case 'Enter':
-                        saveToFile()
-                        break;
-                    default:
-                        console.log(key)
-                }
-            });
-
-            map.current.on('click', e => {
-                if(lastSeq !== null){
-                    console.log(history[lastSeq])
-                }else{
-                    const {lng, lat} = e.lngLat
-                    selected.push([lng,lat])
-                    const marker = new mapboxgl.Marker()
-                        .setLngLat([lng, lat])
-                        .addTo(map.current);
-                    markers.push(marker)
-                }
-                
-            });
-        })
-    });
     return (
         <div>
             <div style={{width:"100%", height:"814px"}} ref={mapContainer} className="map-container" />
         </div>
     );
 }
+
+const styles = [
+    'mapbox://styles/mapbox/streets-v11',
+    'mapbox://styles/mapbox/outdoors-v11',
+    "mapbox://styles/mapbox/light-v10",
+    "mapbox://styles/mapbox/dark-v10",
+    'mapbox://styles/mapbox/satellite-v9',
+    'mapbox://styles/mapbox/satellite-streets-v11',
+    'mapbox://styles/mapbox/navigation-day-v1',
+    'mapbox://styles/mapbox/navigation-night-v1',
+]
+
+const PRELOAD_FILL_LAYER = {
+    id:         'preload-fills',
+    type:       'fill',
+    source:     'preload',
+    layout:     {},
+    paint:      {
+        'fill-color': '#627BC1',//'#627BC1',
+        'fill-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            0.7, 0.2
+        ]
+    }
+}
+const CURRENT_FILL_LAYER = {
+    id:         'current-fills',
+    type:       'fill',
+    source:     'current',
+    layout:     {},
+    paint:      {
+        'fill-color': '#990F02',//'#627BC1',
+        'fill-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            0.7, 0.2
+        ]
+    }
+}
+
+const PRELOAD_BORDER_LAYER = {
+    id: 'preload-borders',
+    type: 'line',
+    source: 'preload',
+    layout: {},
+    paint: {
+        'line-color': '#627BC1',
+        'line-width': 1
+    }
+}
+
+const CURRENT_BORDER_LAYER = {
+    id: 'current-borders',
+    type: 'line',
+    source: 'current',
+    layout: {},
+    paint: {
+        'line-color': '#990F02',
+        'line-width': 1
+    }
+}
+
+const DEFAULT_DATA = { "type": "FeatureCollection", "features":[]}
+const DEFAULT_SOURCE = { type: 'geojson', data: DEFAULT_DATA }
 
 
 export default MapComponent;
