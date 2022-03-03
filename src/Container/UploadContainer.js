@@ -7,22 +7,63 @@ class UploadContainer extends React.Component{
         super(props)
 
         this.state = {
-            history:[],
-            tempCount: 0,
-            zoom:15.0000,
+            id:null,
+            title:'',
+            handlers:{
+                update:()=>{},
+                delete:()=>{}
+            }
         }
     }
 
     SetState = (field, value)=> this.setState( state =>({ ...state, [field]:value } ))
+    UpdateItem = ()=>{
+        const {id, title, handlers} = this.state
+        if(id === null) return;
+        const properties = {
+            title
+        }
+        handlers.update(id, properties)
+    }
+    DeleteItem = ()=>{
+        const {id, handlers} = this.state
+        if(id === null) return;
+        handlers.delete(id)
+    }
+    
+    Select = (item)=>{
+        const {id, properties} = item
+        this.setState( state =>({
+            ...state,
+            id,
+            title: properties.title || "",
+        }))
+    }
 
     render(){
+        const {title, id} = this.state
         return (
             <div>
                 <MapComponent
-                    total={this.getTotal}
                     setProps={this.SetState}
-                    onSelect={this.selectCell}
+                    onSelect={this.Select}
                 />
+                <div style={modalStyles.container}>
+                    <div style={modalStyles.background}/>
+                    <div style={modalStyles.uiContainer}>
+                        <div>
+                            <button onClick={this.DeleteItem} > Delete </button>
+                            <button onClick={this.UpdateItem}> Update </button>
+                        </div>
+                        <div> {id} </div>
+                        <div>
+                            Title <input onChange={(e)=>this.SetState('title',e.target.value)} type="text" value={title}/>
+                        </div>
+                        <div>
+
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -34,7 +75,8 @@ const modalStyles = {
         right:100,
         top:    100,
         width:  270,
-        height: 140,
+        height: 500,
+        backgroundColor:'#fff'
     },
     background:{
         position:'absolute',
@@ -56,53 +98,6 @@ const modalStyles = {
         paddingBottom:16,
         
     },
-    countContainer:{
-        width:'100%',
-        height:21,
-        display:'flex',
-        marginBottom:8
-    },
-    countClearButton:{
-        height:'100%',
-        width:21
-    },
-    countClearImage:{
-        width:'100%',
-        height:'100%'
-    },
-    countTextContainer:{
-        flex:1,
-        paddingLeft: 14,
-        paddingRight:14,
-        flexDirection:'row',
-        display:'flex'
-    },
-    otherCountText:{
-        flex:1,
-        height:'100%',
-        textAlign:'left',
-        fontSize:16
-    },
-    mainContainer:{
-        flex:1,
-        width:'100%'
-    },
-    detailButtonContainer:{
-        height:36,
-        width:'100%',
-        marginTop:13,
-        marginBottom:13
-    },
-    detailButton:{
-        height:'100%',
-        width:130,
-        color:'#ffffff',
-        borderRadius:18,
-        paddingTop:5,
-        paddingBottom:5,
-        margin: 'auto'
-    }
-
 }
 
 export default UploadContainer

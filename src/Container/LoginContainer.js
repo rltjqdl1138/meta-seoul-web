@@ -16,8 +16,8 @@ class LoginContainer extends React.Component{
             const {data} = await axios.post('/v1/auth/metamask?sign='+sign)
 
             const accessToken = data.access_token
-
-            this.props.SetState('auth',{isLogined: true, address:account, accessToken})
+            console.log(accessToken)
+            this.props.setProps('auth',{isLogined: true, address:account, accessToken})
             this.props.setLoginModal(false)
         }
     }

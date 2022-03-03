@@ -4,7 +4,7 @@ import mapboxgl from 'mapbox-gl';
 import axios from 'axios'
 mapboxgl.accessToken = 'pk.eyJ1Ijoicmx0anFkbDExMzgiLCJhIjoiY2t6ZHVrOXFxMDZpODJ2cDJidHh2cmZ6aCJ9.N39L45pDFuKBS5OuX0GBXg';
 
-function MapComponent({onSelect, setProps, total}) {
+function MapComponent({onSelect, setProps,}) {
     const mapContainer = useRef(null);
     const map = useRef(null);
     const [lng, setLng] = useState(126.97841);
@@ -12,7 +12,7 @@ function MapComponent({onSelect, setProps, total}) {
     const [zoom, setZoom] = useState(15);
 
     let seq = 0
-    let hoveredCellID = null
+    let hoveredCell = null
 
     let selected = []
     let history = []
@@ -31,35 +31,36 @@ function MapComponent({onSelect, setProps, total}) {
 
         map.current.on('load',()=>{
             LoadLayer()
-            update()
+            reload()
             keyboardEvent()
             mouseEvent()
+            SetHandler()
         })
     });
-    
     /*
      * 1. Initialize
     **/
     function LoadLayer(){
-        map.current.addSource('preload', DEFAULT_SOURCE)
+        map.current.addSource('preload', NEW_DATA())
         map.current.addLayer(PRELOAD_FILL_LAYER);
         map.current.addLayer(PRELOAD_BORDER_LAYER);
 
-        map.current.addSource('current', DEFAULT_SOURCE)
+        map.current.addSource('current', NEW_DATA())
         map.current.addLayer(CURRENT_FILL_LAYER);
         map.current.addLayer(CURRENT_BORDER_LAYER);
         
-        map.current.on('mousemove', 'current-fills', e => {
+        map.current.on('mousemove', 'preload-fills', e => {
             if(e.features.length === 0) return;
-            if(hoveredCellID !== null)
-                    map.current.setFeatureState( { source:'current', id:hoveredCellID }, { hover: false } );
-            map.current.setFeatureState( { source:'current', id:(hoveredCellID = e.features[0].id)}, { hover: true } );
+            if(hoveredCell !== null)
+                    map.current.setFeatureState( { source:'preload', id:hoveredCell.id }, { hover: false } );
+            hoveredCell = e.features[0]
+            map.current.setFeatureState( { source:'preload', id: hoveredCell.id}, { hover: true } );
             
         });
-        map.current.on('mouseleave', 'current-fills', () => {
-            if(hoveredCellID !== null)
-                map.current.setFeatureState( { source:'current', id:hoveredCellID }, { hover: false } );
-            hoveredCellID = null
+        map.current.on('mouseleave', 'preload-fills', () => {
+            if(hoveredCell !== null)
+                map.current.setFeatureState( { source:'preload', id:hoveredCell.id }, { hover: false } );
+            hoveredCell = null
         });
     } 
    function keyboardEvent(){
@@ -75,8 +76,8 @@ function MapComponent({onSelect, setProps, total}) {
    
    function mouseEvent(){
        map.current.on('click', e => {
-           if(hoveredCellID !== null){
-               console.log(history[hoveredCellID])
+           if(hoveredCell !== null){
+               onSelect(hoveredCell)
            }
            else{
                const {lng, lat} = e.lngLat
@@ -88,6 +89,12 @@ function MapComponent({onSelect, setProps, total}) {
            }
            
        });
+   }
+   function SetHandler(){
+       setProps('handlers', {
+           update: updateItem,
+           delete: deleteItem,
+       })
    }
 
     /*
@@ -127,11 +134,18 @@ function MapComponent({onSelect, setProps, total}) {
     /*
      * 3. Upload / Download
     **/
+    async function reload(){
+        const {data:body} = await  axios.get('/v1/area', { "Content-Type" : "application/json" })
+        const source = map.current.getSource('preload')
+        source.setData( body.data )
+    }
+
     async function upload(){
         if( !window.confirm(`타일 ${history.length}개를 업로드합니다.`) ) return;
-        const date = Date.now()
-        const FeatureCollection = {...DEFAULT_SOURCE}
-
+        const FeatureCollection = {
+            type: 'geojson',
+            data:  {type:"FeatureCollection",features:[]}
+        }
         for( let ind in history){
             const item = history[ind]
             const center = item.geometry.coordinates[0].reduce((prev, e)=>{
@@ -146,7 +160,7 @@ function MapComponent({onSelect, setProps, total}) {
             center.lat = center.lat / count
 
             const feature = {
-                id: `${date}-${ind}`,
+                id: `${ind}`,
                 type: "Feature",
                 properties:{
                     center:[center.lng, center.lat]
@@ -161,8 +175,14 @@ function MapComponent({onSelect, setProps, total}) {
         map.current.getSource('current').setData({"type": "FeatureCollection","features":[]})
     }
 
-    async function update(){
-        const {data:body} = await  axios.get('/v1/area', { "Content-Type" : "application/json" })
+    async function deleteItem(seq){
+        if(!window.confirm("타일을 삭제하시겠습니까?")) return;
+        const {data:body} = await  axios.delete(`/v1/area/${seq}`, { "Content-Type" : "application/json" })
+        const source = map.current.getSource('preload')
+        source.setData( body.data )
+    }
+    async function updateItem(seq, properties){
+        const {data:body} = await  axios.put(`/v1/area/${seq}`, {properties}, { "Content-Type" : "application/json" })
         const source = map.current.getSource('preload')
         source.setData( body.data )
     }
@@ -238,6 +258,6 @@ const CURRENT_BORDER_LAYER = {
 
 const DEFAULT_DATA = { "type": "FeatureCollection", "features":[]}
 const DEFAULT_SOURCE = { type: 'geojson', data: DEFAULT_DATA }
-
+const NEW_DATA = ()=>({...DEFAULT_SOURCE, data:{...DEFAULT_DATA}})
 
 export default MapComponent;

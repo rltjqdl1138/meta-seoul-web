@@ -8,6 +8,7 @@ class TileInfoComponent extends React.Component{
     render(){
         const {selectedElement} = this.props
         const isEmpty = !selectedElement || selectedElement.id === undefined
+        console.log(selectedElement)
         return (
             <div style={styles.container}>
                 <div style={styles.accountContainer}>
@@ -31,7 +32,7 @@ class TileInfoComponent extends React.Component{
                         </div>
                         <div style={styles.tileInfoContent}>
                             <div style={styles.titleInfoContentText}>
-                               {isEmpty ? null: "Tile" + ('00000' + selectedElement.id).slice(-5) }
+                               {isEmpty ? null: "Tile" + selectedElement.id }
                             </div>
                         </div>
                     </div>
@@ -44,9 +45,9 @@ class TileInfoComponent extends React.Component{
                         <div style={styles.tileInfoContent}>
                             {isEmpty ? null : (
                                 <div style={{...styles.titleInfoContentText, fontSize:14}}>
-                                    <a target="_blank" href={"https://etherscan.io/token/0x"+selectedElement.asset_id.split(":")[0]}>
+                                    {/* <a target="_blank" href={"https://etherscan.io/token/0x"+selectedElement.asset_id.split(":")[0]}>
                                         {selectedElement.asset_id}
-                                    </a>
+                                    </a> */}
                                 </div>
                             )}
                         </div>
@@ -73,7 +74,7 @@ class TileInfoComponent extends React.Component{
                         </div>
                         <div style={styles.tileInfoContent}>
                             <div style={styles.titleInfoContentText}>
-                                { isEmpty ? "" : `${selectedElement.x},${selectedElement.y}`}
+                                { isEmpty ? "" : `${selectedElement.center[0]},${selectedElement.center[1]}`}
                             </div>
                         </div>
                         
