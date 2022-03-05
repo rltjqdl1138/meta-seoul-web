@@ -19,16 +19,16 @@ class TestContainer extends React.Component{
         this.accessToken = accessToken
         const {data} = await axios.get("/v1/image",{headers: {'Authorization':`Bearer ${accessToken}`}})
         const {assets} = data
+        console.log(assets)
         this.setState({list:assets})
     }
     render(){
         const {list} = this.state
         const Comp = list.length && list.map( e =>
-        (<div key={e.id}>
-            <a href={e.permalink}>
-                <img style={{width:600}} src={e.image_url}/>
-            </a>
-        </div>))
+            (<div key={e.id}>
+                <a href={e.permalink}> <img style={{width:600}} src={e.image_url}/> </a>
+            </div>)
+        )
         return (
             <div>
                 {Comp}

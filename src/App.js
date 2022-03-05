@@ -21,18 +21,12 @@ class App extends React.Component {
         }
     }
     SetState = (field, value)=> this.setState( state =>({ ...state, [field]:value } ))
-    
-    Load = ()=>{
-        
-    }
-
-    setLoginModal = (value) => {
+    setLoginModal = (value)=>{
         const disable =  value ? false : true
         this.SetState('isDisableLoginModal', disable)
     }
     
     render(){
-
         return (
             <div className="app">
                 <BrowserRouter>
