@@ -61,7 +61,7 @@ function MapComponent({onSelect, setProps, total}) {
                 let center = hoveredCell.properties.center
                 center = center.replace("[","").replace("]","").split(",")
                 console.log(center)
-                setProps('selectedCell', {id:hoveredCell.id, center, price:0.1})
+                setProps('selectedCell', {id:hoveredCell.id, center, price:0.1, properties:hoveredCell.properties})
             }
             
         });

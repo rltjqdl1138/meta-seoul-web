@@ -13,11 +13,11 @@ function MapComponent({onSelect, setProps,}) {
 
     let seq = 0
     let hoveredCell = null
-
+    let selectedCell = null
     let selected = []
     let history = []
     let markers = []
-
+    let id = 0
 
     useEffect(() => {
         if (map.current) return;
@@ -43,6 +43,7 @@ function MapComponent({onSelect, setProps,}) {
     function LoadLayer(){
         map.current.addSource('preload', NEW_DATA())
         map.current.addLayer(PRELOAD_FILL_LAYER);
+        map.current.addLayer(SELECT_FILL_LAYER);
         map.current.addLayer(PRELOAD_BORDER_LAYER);
 
         map.current.addSource('current', NEW_DATA())
@@ -52,7 +53,7 @@ function MapComponent({onSelect, setProps,}) {
         map.current.on('mousemove', 'preload-fills', e => {
             if(e.features.length === 0) return;
             if(hoveredCell !== null)
-                    map.current.setFeatureState( { source:'preload', id:hoveredCell.id }, { hover: false } );
+              map.current.setFeatureState( { source:'preload', id:hoveredCell.id }, { hover: false } );
             hoveredCell = e.features[0]
             map.current.setFeatureState( { source:'preload', id: hoveredCell.id}, { hover: true } );
             
@@ -70,14 +71,35 @@ function MapComponent({onSelect, setProps,}) {
                case 's':       add(selected); break;
                case 'z':       undo(); break;
                case 'Enter':   upload(); break;
+               case 'p':       next(); break;
            }
        });
+   }
+   function next(){
+     console.log(id)
+    map.current.setFeatureState( { source:'preload', id:id }, { selected: false } );
+    map.current.setFeatureState( { source:'preload', id:id+1 }, { selected: true } );
+    id = id+1
    }
    
    function mouseEvent(){
        map.current.on('click', e => {
            if(hoveredCell !== null){
-               onSelect(hoveredCell)
+             const a = (center)=>{
+              const marker = new mapboxgl.Marker()
+                .setLngLat(center)
+                .addTo(map.current);
+             }
+             hoveredCell.setCheck=a
+             hoveredCell.setCenter = (coord) =>{
+               map.current.setCenter(coord)
+             }
+             console.log(hoveredCell.id)
+             id=hoveredCell.id
+            onSelect(hoveredCell)
+            if(selectedCell) map.current.setFeatureState( { source:'preload', id:selectedCell.id }, { selected: false } );
+            map.current.setFeatureState( { source:'preload', id:hoveredCell.id }, { selected: true } );
+            selectedCell = hoveredCell
            }
            else{
                const {lng, lat} = e.lngLat
@@ -230,6 +252,21 @@ const CURRENT_FILL_LAYER = {
             'case',
             ['boolean', ['feature-state', 'hover'], false],
             0.7, 0.2
+        ]
+    }
+}
+const SELECT_FILL_LAYER = {
+    id:         'current-select-fills',
+    type:       'fill',
+    source:     'preload',
+    layout:     {},
+    paint:      {
+      'fill-color': '#627BC1',
+        //'fill-color': '#990F02',//'#627BC1',
+        'fill-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            0.5, 0
         ]
     }
 }

@@ -38,7 +38,7 @@ class App extends React.Component {
                         <Route path="/">
                             <Route index element={<TestContainer />} />
                             <Route path="1" element={<ExploreContainer />} />
-                            <Route path="2" element={<TestContainer auth={this.state.auth}/>} />
+                            <Route path="2" element={<UploadContainer auth={this.state.auth}/>} />
                             <Route path="3" element={<TestContainer auth={this.state.auth}/>}/>
                         </Route>
                     </Routes>
