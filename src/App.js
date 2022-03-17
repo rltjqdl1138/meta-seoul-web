@@ -36,10 +36,9 @@ class App extends React.Component {
                     />
                     <Routes>
                         <Route path="/">
-                            <Route index element={<TestContainer />} />
+                            <Route index element={<div />} />
                             <Route path="1" element={<ExploreContainer />} />
-                            <Route path="2" element={<UploadContainer auth={this.state.auth}/>} />
-                            <Route path="3" element={<TestContainer auth={this.state.auth}/>}/>
+                            <Route path="2" element={<TestContainer auth={this.state.auth}/>}/>
                         </Route>
                     </Routes>
                     {this.state.isDisableLoginModal ? null : (<LoginContainer setProps={this.SetState} setLoginModal={this.setLoginModal}/>)}
@@ -51,6 +50,7 @@ class App extends React.Component {
 }
 
 /*
+                            <Route path="3" element={<UploadContainer auth={this.state.auth}/>} />
 <div className="App">
 <HeaderContainer
     auth={this.state.auth}

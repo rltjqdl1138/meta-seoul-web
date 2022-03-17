@@ -6,216 +6,149 @@ class TileInfoComponent extends React.Component{
         this.state = {}
     }
     render(){
-        const {selectedElement} = this.props
-        const isEmpty = !selectedElement || selectedElement.id === undefined
+        const {selectedElement} = this.props || {}
+        const {id, price, properties, center} = selectedElement || {}
+        const {address, title} = properties || {}
         console.log(selectedElement)
+        console.log(center)
+        const coord = center ? center.map((e)=>e.slice(0,8)).join(', ') : ""
+        const imgURL = "/images/" + String(selectedElement.id).padStart(3,'0') + '.png'
+        console.log(imgURL)
         return (
-            <div style={styles.container}>
-                <div style={styles.accountContainer}>
-                    <img src="/profile.png" style={styles.profileImage}/>
-                    <div style={styles.accountInfo}>
-                        <div style={styles.nicknameText}>
-                            Nickname
-                        </div>
-                        <div style={styles.addressText}>
-                            {selectedElement.wallet}
-                        </div>
-                    </div>
-                </div>
-
-                <div style={styles.tileInfoContainer}>
-                    <div className="titleInfo-border" style={{...styles.tileInfoItem, backgroundColor:"#f5f5f5"}}>
-                        <div style={styles.tileInfoTitle}>
-                            <div style={styles.titleInfoTitleText}>
-                                Tile name
-                            </div>
-                        </div>
-                        <div style={styles.tileInfoContent}>
-                            <div style={styles.titleInfoContentText}>
-                               {isEmpty ? null: "Tile" + selectedElement.id }
-                            </div>
-                        </div>
-                    </div>
-                    <div className="titleInfo-border" style={{...styles.tileInfoItem, backgroundColor:"#ffffff"}}>
-                        <div style={styles.tileInfoTitle}>
-                            <div style={styles.titleInfoTitleText}>
-                                Tile NFT number
-                            </div>
-                        </div>
-                        <div style={styles.tileInfoContent}>
-                            {isEmpty ? null : (
-                                <div style={{...styles.titleInfoContentText, fontSize:14}}>
-                                    {/* <a target="_blank" href={"https://etherscan.io/token/0x"+selectedElement.asset_id.split(":")[0]}>
-                                        {selectedElement.asset_id}
-                                    </a> */}
-                                </div>
-                            )}
-                        </div>
-                        
-                    </div>
-                    <div className="titleInfo-border" style={{...styles.tileInfoItem, backgroundColor:"#f5f5f5"}}>
-                        <div style={styles.tileInfoTitle}>
-                            <div style={styles.titleInfoTitleText}>
-                                Tile location
-                            </div>
-                        </div>
-                        <div style={styles.tileInfoContent}>
-                            <div style={styles.titleInfoContentText}>
-                                {isEmpty ? "" : selectedElement.location}
-                            </div>
-                        </div>
-
-                    </div>
-                    <div className="titleInfo-border" style={{...styles.tileInfoItem, backgroundColor:"#ffffff"}}>
-                        <div style={styles.tileInfoTitle}>
-                            <div style={styles.titleInfoTitleText}>
-                                Tile Coordinate
-                            </div>
-                        </div>
-                        <div style={styles.tileInfoContent}>
-                            <div style={styles.titleInfoContentText}>
-                                { isEmpty ? "" : `${selectedElement.center[0]},${selectedElement.center[1]}`}
-                            </div>
-                        </div>
-                        
-                    </div>
-                    <div className="titleInfo-border" style={{...styles.tileInfoItem, backgroundColor:"#f5f5f5"}}>
-                        <div style={styles.tileInfoTitle}>
-                            <div style={styles.titleInfoTitleText}>
-                                Tile tier
-                            </div>
-                        </div>
-                        <div style={styles.tileInfoContent}>
-                            <div style={styles.titleInfoContentText}>
-                                {isEmpty ? null :
-                                (<div style={{ paddingTop:1, marginTop:5, textAlign:'center', height:29, fontSize:18, width:58, borderRadius:3, backgroundColor:"#e74d3d", color:"#fff"}}>
-                                    Tier 1
-                                </div>) }
-                            </div>
-                        </div>
-
-                    </div>
-                    <div className="titleInfo-border" style={{...styles.tileInfoItem, backgroundColor:"#ffffff"}}>
-                        <div style={styles.tileInfoTitle}>
-                            <div style={styles.titleInfoTitleText}>
-                                Current Market Value
-                            </div>
-                        </div>
-                        <div style={styles.tileInfoContent}>
-                            <div style={styles.titleInfoContentText}>
-                                {isEmpty ? "" : selectedElement.price + "ETH"}
-                            </div>
-                        </div>
-                        
-                    </div>
-                    
-                    <div className="titleInfo-border" style={{...styles.tileInfoItem, backgroundColor:"#f5f5f5"}}>
-                        <div style={styles.tileInfoTitle}>
-                            <div style={styles.titleInfoTitleText}>
-                                Buy Now for
-                            </div>
-                        </div>
-                        <div style={styles.tileInfoContent}>
-                            <div style={styles.titleInfoContentText}>
-                                {isEmpty ? "" : selectedElement.price + "ETH"}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div style={styles.openSeaButtonContainer}>
-                    <a target="_blank" href="https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/5794962098794387521142323084786560340622945892957766951761762342183911827216">
-                        <img className='hovered'
-                            src="/open-sea-logo.png" style={styles.openSeaButton}/>
-                    </a>
-                </div>
+          <div style={styles.container}>
+            <div style={styles.header}>
+              <HeaderIconDraw />
+              <div style={styles.headerTextContainer}>
+                <div style={styles.headerText}>Detail Information</div>
+              </div>
             </div>
+            <div style={styles.contentContainer}>
+              <div style={styles.shortcutContainer}>
+                <img src={imgURL} style={styles.shortcutImage}/>
+              </div>
+
+              <Info title="Tile id" value={id}/>
+              <Info title="Tile name" value={title}/>
+              <Info title="Tile location" value={address}/>
+              <Info title="Tile Coordinate" value={coord}/>
+              <Info title="Tile Owner" value=""/>
+              <Info title="Tile Current Market Value" value={price}/>
+              <Info title="Buy Now for" value={price}/>
+              
+            </div>
+            <div style={styles.openSeaButtonContainer}>
+              <img src="/open-sea-logo.png" style={styles.openSeaButton}/>
+            </div>
+          </div>
         )
     }
 }
-
+function Info({title, value}){
+  return (
+    
+    <div style={styles.infoContainer}>
+      <div style={styles.textInfoContainer}>
+        <div style={styles.textInfotitle}>
+          {title}
+        </div>
+        <div style={styles.textInfoContent}> 
+          {value}
+        </div>
+      </div>
+    </div>
+  )
+}
+function HeaderIconDraw(){
+  return (
+    <div style={styles.headerIconContainer}>
+      <div style={styles.headerIconSubContainer}>
+        <div style={{width:8, height:8, marginRight:2, marginTop:2, backgroundColor:'#9cb3c8'}} />
+        <div style={{width:8, height:8, marginRight:2, marginTop:2, backgroundColor:'#9cb3c8'}} />
+      </div>
+      
+      <div style={styles.headerIconSubContainer}>
+        <div style={{width:8, height:8, marginRight:2, marginTop:2, backgroundColor:'#9cb3c8'}} />
+        <div style={{width:10, height:10, marginRight:2, marginTop:2, backgroundColor:'#fff'}} />
+      </div>
+    </div>
+  )
+}
 const styles = {
     container:{
-        width:'100%',
-        height:'100%',
-        padding:46,
-        display:'flex',
-        flexDirection:'column'
+      width:'100%',
+      height:'100%',
     },
-    accountContainer:{
-        width:'100%',
-        height:76,
-        marginTop: 15,
-        marginBottom:15,
-        display:'flex'
+    contentContainer:{
+      paddingLeft:37,
+      paddingTop:26,
+      paddingRight:37
     },
-    profileImage:{
-        width:76,
-        height:76
+    header:{
+      width:'100%',
+      height:60,
+      paddingLeft:23,
+      paddingTop:20,
+      paddingBottom:20,
+      backgroundColor:'#17508a',
+      display:'flex',
+      flexDirection:'row'
     },
-    accountInfo:{
-        flex:1,
-        marginLeft:21,
-        padding:3,
-        marginBottom:8
+    headerIconContainer:{
+      paddingRight:12,
+      height:'100%',
+      display:'flex',
+      flexDirection:'row'
     },
-    nicknameText:{
-        fontSize:30,
-        height: 45,
-        textAlign:'left',
+    headerIconSubContainer:{
+      flex:1
     },
-    addressText:{
-        fontSize:20,
-        height: 25,
-        textAlign:'left',
+    headerTextContainer:{
+      marginTop:-3
     },
-    tileInfoContainer:{
-        width:'100%',
-        flex:1,
-        paddingTop:50,
-        paddingBottom:50
+    headerText:{
+      fontFamily:'Poppins-Regular',
+      fontSize:18,
+      color:'#ffffff'
     },
-    tileInfoItem:{
-        height:58,
-        display:'flex'
+    shortcutContainer:{
+      width:128,
+      height:128,
+      marginBottom:7
     },
-    tileInfoTitle: {
-        height:'100%',
-        width:220,
+    shortcutImage:{
+      width:'100%',
+      height:'100%'
     },
-    tileInfoContent:{
-        flex:1,
-        height:'100%',
-        display:'block',
-        overflowX:'hidden',
-        paddingRight:20
+    infoContainer:{
+      paddingBottom:7,
     },
-    
-    titleInfoTitleText:{
-        height:'100%',
-        width:'100%',
-        textAlign:'left',
-        padding: 10,
-        paddingLeft:23,
-        fontSize: 18,
-        overflowX:'hidden'
+    textInfoContainer:{
+      paddingTop:18,
+      height:80
     },
-    titleInfoContentText:{
-        height:'100%',
-        width:'100%',
-        maxWidth:400,
-        textAlign:'left',
-        padding: 10,
-        paddingLeft:23,
-        fontSize: 18,
-        display:'flex',
-        flexDirection:'column',
-        overflowX:'hidden'
+    textInfotitle:{
+      fontSize:16,
+    },
+    textInfoContent:{
+      height:40,
+      width:'100%',
+      fontSize:14,
+      backgroundColor:'#e8edf5',
+      borderRadius:3,
+      margin:'auto',
+      lineHeight:3,
+      paddingLeft:17
     },
     openSeaButtonContainer:{
-
+      marginTop:25,
+      marginBottom:24,
+      paddingLeft:105,
+      paddingRight:105,
+      height:39
     },
     openSeaButton:{
-        height:50
+      widht:'100%',
+      height:'100%'
     }
 }
 

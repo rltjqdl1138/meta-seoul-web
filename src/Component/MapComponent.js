@@ -74,7 +74,7 @@ function MapComponent({onSelect, setProps, total}) {
     
     return (
         <div>
-            <div style={{width:"100%", height:"814px"}} ref={mapContainer} className="map-container" />
+            <div style={{width:"100%", height:"900px"}} ref={mapContainer} className="map-container" />
         </div>
     );
 }

@@ -39,7 +39,13 @@ const styles = {
         flex:1
     },
     infoContainer:{
-        flex:1
+      position:'absolute',
+      right:60,
+      top:93,
+      width:350,
+      height:870,
+      borderRadius: 5,
+      backgroundColor:'#fff'
     }
 }
 /*

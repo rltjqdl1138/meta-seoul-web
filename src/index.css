@@ -11,3 +11,15 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+@font-face{
+  font-family: 'Poppins-Medium';
+  src: local('Poppins'), url('../public/fonts/Poppins-Medium.ttf') format('ttf');
+}
+@font-face{
+  font-family: 'Poppins-Regular';
+  src: local('Poppins'), url('../public/fonts/Poppins-Regular.ttf') format('ttf');
+}
+@font-face {
+  font-family: 'NotoSansCJKkr-Medium';
+  src: local('NotoSansCJKkr'), url('../public/fonts/NotoSansCJKkr-Medium.otf') format('otf');
+}

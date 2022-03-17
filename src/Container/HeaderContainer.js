@@ -13,34 +13,35 @@ function HeaderContainer({setLoginModal, auth}){
             <nav className="nav-container" style={styles.navContainer}>
                 <Link to="1">
                     <div className="hovered" style={styles.navItemContainer} >
-                        <div style={styles.navItemText}>
+                        <div className="font-poppins" style={styles.navItemText}>
                             Buy Land
                         </div>
                     </div>
                 </Link>
                 <Link to="2">
                     <div className="hovered" style={styles.navItemContainer}>
-                        <div style={styles.navItemText}>Marketplace
+                        <div className="font-poppins" style={styles.navItemText}>
+                          Marketplace
                         </div>
                     </div>
                 </Link>
                 <Link to="3">
                     <div className="hovered" style={styles.navItemContainer}>
-                        <div style={styles.navItemText}> 
+                        <div className="font-poppins" style={styles.navItemText}> 
                             News
                         </div>
                     </div>
                 </Link>
                 <Link to="4">
                     <div className="hovered" style={styles.navItemContainer}>
-                        <div style={styles.navItemText}>
+                        <div className="font-poppins" style={styles.navItemText}>
                             Community
                         </div>
                     </div>
                 </Link>
                 <Link to="5">
                     <div className="hovered" style={styles.navItemContainer}>
-                        <div style={styles.navItemText}>
+                        <div className="font-poppins" style={styles.navItemText}>
                             Support
                         </div>
                     </div>
@@ -106,9 +107,11 @@ const styles = {
     },
     navItemText:{
         height:20,
+        fontFamily:'Poppins-Regular',
         fontSize:13,
         display:'inline-block',
-        verticalAlign:'center'
+        verticalAlign:'center',
+        color:'#000'
     },
     navItemImage:{
         width:10,
@@ -133,6 +136,7 @@ const styles = {
         height:32,
         width:90,
         backgroundColor:"#405ca9",
+        fontFamily:'Poppins-Medium',
         color:'#ffffff',
         fontSize:14,
         borderRadius:16,
@@ -140,6 +144,7 @@ const styles = {
         paddingBottom:5,
         margin: 'auto',
         marginTop:8,
+        textAlign:'center'
     },
     profileContainer:{
         flex:1
