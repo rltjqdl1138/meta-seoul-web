@@ -28,7 +28,7 @@ function HeaderContainer({setLoginModal, auth}){
                 <Link to="3">
                     <div className="hovered" style={styles.navItemContainer}>
                         <div className="font-poppins" style={styles.navItemText}> 
-                            News
+                            Owner Test
                         </div>
                     </div>
                 </Link>

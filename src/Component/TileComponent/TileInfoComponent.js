@@ -31,10 +31,10 @@ class TileInfoComponent extends React.Component{
               <Info title="Tile name" value={title}/>
               <Info title="Tile location" value={address}/>
               <Info title="Tile Coordinate" value={coord}/>
-              <Info title="Tile Owner" value=""/>
+              <Info title="Tile Owner" value="3dfactory"/>
               <Info title="Tile Current Market Value" value={price}/>
               <Info title="Buy Now for" value={price}/>
-              
+
             </div>
             <div style={styles.openSeaButtonContainer}>
               <img src="/open-sea-logo.png" style={styles.openSeaButton}/>
@@ -44,12 +44,13 @@ class TileInfoComponent extends React.Component{
     }
 }
 function Info({title, value}){
+  const len = Math.floor(title.length / 0.11)
   return (
-    
     <div style={styles.infoContainer}>
       <div style={styles.textInfoContainer}>
         <div style={styles.textInfotitle}>
           {title}
+          <div style={{...styles.textInfoTitleBox, width:len}} />
         </div>
         <div style={styles.textInfoContent}> 
           {value}
@@ -77,6 +78,8 @@ const styles = {
     container:{
       width:'100%',
       height:'100%',
+      borderRadius:5,
+      boxShadow: "0 0 20px 0 rgba(31, 31, 31, 0.35)",
     },
     contentContainer:{
       paddingLeft:37,
@@ -91,7 +94,8 @@ const styles = {
       paddingBottom:20,
       backgroundColor:'#17508a',
       display:'flex',
-      flexDirection:'row'
+      flexDirection:'row',
+      borderRadius:"5px 5px 0 0",
     },
     headerIconContainer:{
       paddingRight:12,
@@ -111,9 +115,12 @@ const styles = {
       color:'#ffffff'
     },
     shortcutContainer:{
-      width:128,
-      height:128,
-      marginBottom:7
+      width:130,
+      height:130,
+      marginBottom:7,
+      borderWidth:2,
+      borderColor:"#7da7d9",
+      borderStyle:'solid'
     },
     shortcutImage:{
       width:'100%',
@@ -124,24 +131,32 @@ const styles = {
     },
     textInfoContainer:{
       paddingTop:18,
-      height:80
+      height:68
     },
     textInfotitle:{
+      fontFamily:"NanumSquareEB",
       fontSize:16,
+      color: "#3b3b3b",
+    },
+    textInfoTitleBox:{
+      minWidth:60,
+      maxWith:180,
+      height:5,
+      marginTop:-8,
+      backgroundColor:'#96bae6'
     },
     textInfoContent:{
-      height:40,
+      fontFamily:"NanumSquareB",
       width:'100%',
       fontSize:14,
-      backgroundColor:'#e8edf5',
-      borderRadius:3,
       margin:'auto',
-      lineHeight:3,
-      paddingLeft:17
+      paddingTop:10,
+      paddingLeft:4,
+      color: "#3b3b3b",
     },
     openSeaButtonContainer:{
       marginTop:25,
-      marginBottom:24,
+      marginBottom:26,
       paddingLeft:105,
       paddingRight:105,
       height:39

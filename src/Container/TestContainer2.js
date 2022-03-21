@@ -1,10 +1,19 @@
 import React from 'react';
 import axios from 'axios'
-
 class TestContainer extends React.Component{
     constructor(props){
         super(props)
-        this.state = {list:[], isLast:true}
+        this.addresses = [
+          {name:"3DFactory", addr:"0x023b49aC5B350578b275ECD0fF0cFE28cCb2F712"},
+          {name:"Test1",addr:"0x756358a9562784dfE9B26EfBdD0b4e98B5ca472F"},
+          {name:"유저1", addr:"0x80ff2a5b78fb33317049734840550bc3f1a0425e"},
+          {name:"유저2", addr:"0xd8284d6a3b2a31bc3d5cf6b4b73024e708bdc4c2"},
+        ]
+        this.state = {
+          wallet:null,
+          list:[],
+          isLast:true
+        }
     }
     accessToken = null
     currentCursor = "hello"
@@ -17,18 +26,25 @@ class TestContainer extends React.Component{
     componentDidMount(){
       this.loadMarket()
     }
-    async loadMarket(){
-      if(this.nextCursor === this.currentCursor){
+    async loadMarket(wallet = null){
+      if(this.nextCursor === this.currentCursor && this.state.wallet === wallet){
         console.log('same~')
         return;
       }
       this.currentCursor = this.nextCursor
-      const offsetQuery = this.nextCursor ? `&cursor=${this.nextCursor}`:""
-      const {data} = await axios.get("/v1/marketplace?limit=40"+offsetQuery)
+      const offsetQuery =  this.state.wallet === wallet && this.nextCursor ? `&cursor=${this.nextCursor}`:""
+      const ownerQuery = wallet ? `&owner=${wallet}` : ''
+      const {data} = await axios.get("/v1/marketplace?limit=40"+ownerQuery+offsetQuery)
       const {assets} = data
-  
+      console.log(assets[0])
+      const newList = this.state.wallet === wallet ? [...this.state.list, ...assets] : assets
       this.nextCursor = data.next
-      this.setState(state => ({list:[...state.list, ...assets], isLast:!data.next}))
+
+      this.setState({
+        wallet,
+        list:newList,
+        isLast:!data.next,
+      })
     }
     async load(props){
         //const auth = props.auth || {}
@@ -38,11 +54,10 @@ class TestContainer extends React.Component{
         //this.accessToken = accessToken
         //const {data} = await axios.get("/v1/marketplace",{headers: {'Authorization':`Bearer ${accessToken}`}})
         const {assets} = data
-        console.log(assets[0])
         this.setState({list:assets})
     }
     render(){
-        const {list, isLast} = this.state
+        const {list, isLast, wallet} = this.state
         const Comp = list.length && list.map( e =>
             (<
               OpenSeaCard
@@ -53,14 +68,29 @@ class TestContainer extends React.Component{
                 name={e.name}
             />)
         )
+        const testButtons = this.addresses.map(({name,addr},index)=>(
+          <div key = {index}>
+            <button onClick={()=>this.loadMarket(addr)}>
+              {name}
+            </button>
+          </div>
+        ))
         return (
           <div >
+              <div style={styles.container}>
+                {testButtons}
+              </div>
+              <div style={styles.container}>
+                <a href={"https://opensea.io/"+wallet}>
+                  ADDR: {wallet}
+                </a>
+              </div>
               <div style={styles.container}>
               {Comp}
               </div>
               <div>
-                <button style={{display:isLast?'none':''}} onClick={()=>this.loadMarket()}>
-                  Load More
+                <button style={{display:isLast?'none':''}} onClick={()=>this.loadMarket(wallet)}>
+                    Load More
                 </button>
               </div>
           </div>
@@ -79,9 +109,6 @@ function OpenSeaCard({permalink, image_url, description, name}){
             <div style={styles.cardTitle}>
               {name}
             </div>
-            <div style={styles.cardDescription}>
-              {description}
-            </div> 
           </div>
           <div style={styles.cardFooterContainer}>
             <div style={styles.cardFotterLine} />
@@ -118,7 +145,8 @@ const styles={
     flexDirection:'column'
   },
   cardImageContainer:{
-    padding:25
+    padding:25,
+    height:250
   },
   cardImage:{
     width:'100%',

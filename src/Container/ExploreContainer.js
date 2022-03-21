@@ -43,7 +43,7 @@ const styles = {
       right:60,
       top:93,
       width:350,
-      height:870,
+      height:828,
       borderRadius: 5,
       backgroundColor:'#fff'
     }

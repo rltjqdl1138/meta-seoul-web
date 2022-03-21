@@ -16,7 +16,7 @@ class LoginContainer extends React.Component{
             const {data} = await axios.post('/v1/auth/metamask?sign='+sign)
 
             const accessToken = data.access_token
-            console.log(accessToken)
+
             this.props.setProps('auth',{isLogined: true, address:account, accessToken})
             this.props.setLoginModal(false)
         }
@@ -96,11 +96,13 @@ const styles = {
     },
     loginTitleContainer:{
         fontSize:24,
-        color:'#1d1e54'
+        color:'#1d1e54',
+        textAlign:'center'
     },
     loginContentContainer:{
         fontSize:14,
-        color:'#7e7e7e'
+        color:'#7e7e7e',
+        textAlign:'center'
     },
 
 
@@ -123,9 +125,9 @@ const styles = {
         display:'flex'
     },
     metamaskImageContainer:{
+      marginTop:10,
         height:'100%',
         width:40,
-
         marginLeft:20,
         marginRight:20
     },
