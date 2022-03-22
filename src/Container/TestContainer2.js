@@ -1,17 +1,14 @@
 import React from 'react';
 import axios from 'axios'
+import OpenSeaCard from '../Component/OpenSeaCard';
+
 class TestContainer extends React.Component{
     constructor(props){
         super(props)
-        this.addresses = [
-          {name:"3DFactory", addr:"0x023b49aC5B350578b275ECD0fF0cFE28cCb2F712"},
-          {name:"Test1",addr:"0x756358a9562784dfE9B26EfBdD0b4e98B5ca472F"},
-          {name:"유저1", addr:"0x80ff2a5b78fb33317049734840550bc3f1a0425e"},
-          {name:"유저2", addr:"0xd8284d6a3b2a31bc3d5cf6b4b73024e708bdc4c2"},
-        ]
         this.state = {
           wallet:null,
-          list:[],
+          openseaList:[],
+          landmarkersList:[],
           isLast:true
         }
     }
@@ -25,35 +22,41 @@ class TestContainer extends React.Component{
     }*/
     componentDidMount(){
       this.loadMarket()
+      this.load()
     }
-    async loadMarket(wallet = null){
-      if(this.nextCursor === this.currentCursor && this.state.wallet === wallet){
+    async loadMarket(){
+      const auth = this.props.auth || {}
+      const {address, accessToken} = auth
+      if(!address || !accessToken) return;
+
+      if(this.nextCursor === this.currentCursor){
         console.log('same~')
         return;
       }
       this.currentCursor = this.nextCursor
-      const offsetQuery =  this.state.wallet === wallet && this.nextCursor ? `&cursor=${this.nextCursor}`:""
-      const ownerQuery = wallet ? `&owner=${wallet}` : ''
+      const offsetQuery =  this.nextCursor ? `&cursor=${this.nextCursor}`:""
+      const ownerQuery = `&owner=${address}`
       const {data} = await axios.get("/v1/marketplace?limit=40"+ownerQuery+offsetQuery)
       const {assets} = data
-      const newList = this.state.wallet === wallet ? [...this.state.list, ...assets] : assets
       this.nextCursor = data.next
 
-      this.setState({
-        wallet,
-        list:newList,
+      this.setState(state => ({
+        ...state,
+        openseaList:[...state.openseaList, ...assets],
         isLast:!data.next,
-      })
+      }))
     }
     async load(props){
-        //const auth = props.auth || {}
-        //const {address, accessToken} = auth
-        //if(!address || !accessToken) return;
-        const {data} = await axios.get("/v1/marketplace")
-        //this.accessToken = accessToken
-        //const {data} = await axios.get("/v1/marketplace",{headers: {'Authorization':`Bearer ${accessToken}`}})
-        const {assets} = data
-        this.setState({list:assets})
+      const auth = this.props.auth || {}
+      const {address, accessToken} = auth
+      if(!address || !accessToken) return;
+
+      const {data} = await axios.get("/v1/user/image",{headers: {'Authorization':`Bearer ${accessToken}`}})
+      const {list} = data
+      this.setState(state => ({
+        ...state,
+        landmarkersList: list
+      }))
     }
     async clickItem(item){
       console.log(item)
@@ -61,74 +64,37 @@ class TestContainer extends React.Component{
       console.log(data)
     }
     render(){
-        const {list, isLast, wallet} = this.state
-        const Comp = list.length && list.map( e =>
+        const {openseaList, isLast, wallet} = this.state
+        const Comp = openseaList.length && openseaList.map( e =>
             (<
               OpenSeaCard
                 key={e.id}
-                permalink={e.permalink}
-                image_url={e.image_url}
+                openseaLink={e.permalink}
+                imageURL={e.image_url}
                 description={e.description}
                 name={e.name}
-                onClick={()=>this.clickItem(e)}
             />)
         )
-        const testButtons = this.addresses.map(({name,addr},index)=>(
-          <div key = {index}>
-            <button onClick={()=>this.loadMarket(addr)}>
-              {name}
-            </button>
-          </div>
-        ))
         return (
           <div >
-              <div style={styles.container}>
-                {testButtons}
-              </div>
-              <div style={styles.container}>
-                <a href={"https://opensea.io/"+wallet}>
-                  ADDR: {wallet}
-                </a>
-              </div>
-              <div style={styles.container}>
-              {Comp}
-              </div>
-              <div>
-                <button style={{display:isLast?'none':''}} onClick={()=>this.loadMarket(wallet)}>
-                    Load More
-                </button>
-              </div>
+            <div style={styles.container}>
+              <a href={"https://opensea.io/"+wallet}>
+                ADDR: {wallet}
+              </a>
+            </div>
+            <div style={styles.container}>
+            {Comp}
+            </div>
+            <div>
+              <button style={{display:isLast?'none':''}} onClick={()=>this.loadMarket(wallet)}>
+                  Load More
+              </button>
+            </div>
           </div>
         )
     }
 }
-function OpenSeaCard({permalink, image_url, description, name, onClick}){
-  return(
-    <div style={styles.card}>
-      <a href={permalink} style={{textDecoration: 'none'}}>
-        <div style={styles.cardContainer}>
-          <div style={styles.cardImageContainer}>
-            <img src={image_url} style={styles.cardImage}/>
-          </div>
-          <div style={styles.cardInfoContainer}>
-            <div style={styles.cardTitle}>
-              {name}
-            </div>
-          </div>
-          <div style={styles.cardFooterContainer}>
-            <div style={styles.cardFotterLine} />
-            <div style={styles.cardFooterImageContainer}>
-              <img src="/land-markers-logo-white.png" style={styles.cardFooterImage}/>
-            </div>
-          </div>
-        </div>
-      </a>
-      <button onClick={onClick}>
-        요청
-      </button>
-    </div>
-  )
-}
+
 const styles={
   container:{
     display:'flex',

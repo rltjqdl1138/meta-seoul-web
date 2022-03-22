@@ -10,37 +10,20 @@ class TestContainer extends React.Component{
     accessToken = null
     currentCursor = "hello"
     nextCursor = null
-    /*
-    componentDidUpdate(prevProps, prevState){
-        if(this.accessToken !== null ) return
-        this.load(prevProps)
-    }*/
     componentDidMount(){
-      this.loadMarket()
+      this.load()
     }
-    async loadMarket(){
-      if(this.nextCursor === this.currentCursor){
-        console.log('same~')
-        return;
-      }
-      this.currentCursor = this.nextCursor
-      const offsetQuery = this.nextCursor ? `&cursor=${this.nextCursor}`:""
-      const {data} = await axios.get("/v1/marketplace?limit=40"+offsetQuery)
-      const {assets} = data
-  
-      this.nextCursor = data.next
-      this.setState(state => ({list:[...state.list, ...assets], isLast:!data.next}))
-    }
-    async load(props){
-        //const auth = props.auth || {}
-        //const {address, accessToken} = auth
-        //if(!address || !accessToken) return;
-        const {data} = await axios.get("/v1/marketplace")
+    async load(){
+        const auth = this.props.auth || {}
+        const {address, accessToken} = auth
+        if(!address || !accessToken) return;
         //this.accessToken = accessToken
-        //const {data} = await axios.get("/v1/marketplace",{headers: {'Authorization':`Bearer ${accessToken}`}})
-        const {assets} = data
-        this.setState({list:assets})
+        const {data} = await axios.get("/v1/user/image",{headers: {'Authorization':`Bearer ${accessToken}`}})
+        const {list} = data
+        console.log(list)
+        this.setState({list, isLast:true})
     }
+
     render(){
         const {list, isLast} = this.state
         console.log(list)

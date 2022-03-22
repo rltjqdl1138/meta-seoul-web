@@ -9,11 +9,8 @@ class TileInfoComponent extends React.Component{
         const {selectedElement} = this.props || {}
         const {id, price, properties, center} = selectedElement || {}
         const {address, title} = properties || {}
-        console.log(selectedElement)
-        console.log(center)
         const coord = center ? center.map((e)=>e.slice(0,8)).join(', ') : ""
         const imgURL = "/images/" + String(selectedElement.id).padStart(3,'0') + '.png'
-        console.log(imgURL)
         return (
           <div style={styles.container}>
             <div style={styles.header}>

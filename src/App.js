@@ -7,6 +7,8 @@ import ExploreContainer from './Container/ExploreContainer'
 import UploadContainer from './Container/UploadContainer'
 import TestContainer from './Container/TestContainer';
 import TestContainer2 from './Container/TestContainer2';
+import NFTImageContainer from './Container/NFTImageContainer'
+import MyNFTImageContainer from './Container/MyNFTImageContainer'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 class App extends React.Component {
@@ -40,7 +42,8 @@ class App extends React.Component {
                             <Route index element={<div />} />
                             <Route path="1" element={<ExploreContainer />} />
                             <Route path="2" element={<TestContainer auth={this.state.auth}/>}/>
-                            <Route path="3" element={<TestContainer2 auth={this.state.auth}/>}/>
+                            <Route path="3" element={<NFTImageContainer auth={this.state.auth}/>}/>
+                            <Route path="4" element={<TestContainer2 auth={this.state.auth}/>}/>
                         </Route>
                     </Routes>
                     {this.state.isDisableLoginModal ? null : (<LoginContainer setProps={this.SetState} setLoginModal={this.setLoginModal}/>)}

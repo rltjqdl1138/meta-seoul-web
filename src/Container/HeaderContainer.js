@@ -28,14 +28,14 @@ function HeaderContainer({setLoginModal, auth}){
                 <Link to="3">
                     <div className="hovered" style={styles.navItemContainer}>
                         <div className="font-poppins" style={styles.navItemText}> 
-                            Owner Test
+                            View NFTs
                         </div>
                     </div>
                 </Link>
                 <Link to="4">
                     <div className="hovered" style={styles.navItemContainer}>
                         <div className="font-poppins" style={styles.navItemText}>
-                            Community
+                            My NFT
                         </div>
                     </div>
                 </Link>
