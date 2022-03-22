@@ -27,13 +27,13 @@ class TileInfoComponent extends React.Component{
                 <img src={imgURL} style={styles.shortcutImage}/>
               </div>
 
-              <Info title="Tile id" value={id}/>
-              <Info title="Tile name" value={title}/>
-              <Info title="Tile location" value={address}/>
-              <Info title="Tile Coordinate" value={coord}/>
-              <Info title="Tile Owner" value="3dfactory"/>
-              <Info title="Tile Current Market Value" value={price}/>
-              <Info title="Buy Now for" value={price}/>
+              <Info title="Tile id" value={id} lineWidth={60}/>
+              <Info title="Tile name" value={title} lineWidth={90}/>
+              <Info title="Tile location" value={address} lineWidth={108}/>
+              <Info title="Tile Coordinate" value={coord} lineWidth={132}/>
+              <Info title="Owner" value="3dfactory" lineWidth={66}/>
+              <Info title="Current Market Value" value={price} lineWidth={180}/>
+              <Info title="Buy Now for" value={price} lineWidth={110}/>
 
             </div>
             <div style={styles.openSeaButtonContainer}>
@@ -43,14 +43,13 @@ class TileInfoComponent extends React.Component{
         )
     }
 }
-function Info({title, value}){
-  const len = Math.floor(title.length / 0.11)
+function Info({title, value, lineWidth}){
   return (
     <div style={styles.infoContainer}>
       <div style={styles.textInfoContainer}>
         <div style={styles.textInfotitle}>
           {title}
-          <div style={{...styles.textInfoTitleBox, width:len}} />
+          <div style={{...styles.textInfoTitleBox, width:lineWidth}} />
         </div>
         <div style={styles.textInfoContent}> 
           {value}
@@ -127,11 +126,11 @@ const styles = {
       height:'100%'
     },
     infoContainer:{
+      height:65,
       paddingBottom:7,
     },
     textInfoContainer:{
       paddingTop:18,
-      height:68
     },
     textInfotitle:{
       fontFamily:"NanumSquareEB",
@@ -155,11 +154,11 @@ const styles = {
       color: "#3b3b3b",
     },
     openSeaButtonContainer:{
-      marginTop:25,
-      marginBottom:26,
+      paddingTop:25,
+      paddingBottom:26,
       paddingLeft:105,
       paddingRight:105,
-      height:39
+      height:92
     },
     openSeaButton:{
       widht:'100%',

@@ -36,7 +36,6 @@ class TestContainer extends React.Component{
       const ownerQuery = wallet ? `&owner=${wallet}` : ''
       const {data} = await axios.get("/v1/marketplace?limit=40"+ownerQuery+offsetQuery)
       const {assets} = data
-      console.log(assets[0])
       const newList = this.state.wallet === wallet ? [...this.state.list, ...assets] : assets
       this.nextCursor = data.next
 
@@ -56,6 +55,11 @@ class TestContainer extends React.Component{
         const {assets} = data
         this.setState({list:assets})
     }
+    async clickItem(item){
+      console.log(item)
+      const {data} = await axios.post('/v1/opensea/request',item)
+      console.log(data)
+    }
     render(){
         const {list, isLast, wallet} = this.state
         const Comp = list.length && list.map( e =>
@@ -66,6 +70,7 @@ class TestContainer extends React.Component{
                 image_url={e.image_url}
                 description={e.description}
                 name={e.name}
+                onClick={()=>this.clickItem(e)}
             />)
         )
         const testButtons = this.addresses.map(({name,addr},index)=>(
@@ -97,7 +102,7 @@ class TestContainer extends React.Component{
         )
     }
 }
-function OpenSeaCard({permalink, image_url, description, name}){
+function OpenSeaCard({permalink, image_url, description, name, onClick}){
   return(
     <div style={styles.card}>
       <a href={permalink} style={{textDecoration: 'none'}}>
@@ -118,6 +123,9 @@ function OpenSeaCard({permalink, image_url, description, name}){
           </div>
         </div>
       </a>
+      <button onClick={onClick}>
+        요청
+      </button>
     </div>
   )
 }

@@ -71,10 +71,10 @@ function MapComponent({onSelect, setProps, total}) {
         const source = map.current.getSource('preload')
         source.setData( body.data )
     }
-    
+    const height = `${window.innerHeight-66}px`
     return (
         <div>
-            <div style={{width:"100%", height:"900px"}} ref={mapContainer} className="map-container" />
+            <div style={{width:"100%", height}} ref={mapContainer} className="map-container" />
         </div>
     );
 }

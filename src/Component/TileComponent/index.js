@@ -86,7 +86,7 @@ class TileListElement extends React.Component{
 
 const styles = {
     container:{
-        height:'750px',
+        height:778,
         display:'flex',
         paddingLeft:200,
         paddingRight:200
