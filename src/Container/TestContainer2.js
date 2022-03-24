@@ -21,21 +21,24 @@ class TestContainer extends React.Component{
         this.load(prevProps)
     }*/
     componentDidMount(){
-      this.loadMarket()
+      const addr = "0x5f3f579d84f776826908ff1f3f1521477dad5f9f"
+      console.log(addr)
+      this.loadMarket(addr)
       this.load()
     }
-    async loadMarket(){
+    async loadMarket(otherAddress = null){
       const auth = this.props.auth || {}
       const {address, accessToken} = auth
-      if(!address || !accessToken) return;
+      if(!otherAddress && (!address || !accessToken)) return;
 
       if(this.nextCursor === this.currentCursor){
         console.log('same~')
         return;
       }
+      const ownerAddress = otherAddress || address
       this.currentCursor = this.nextCursor
       const offsetQuery =  this.nextCursor ? `&cursor=${this.nextCursor}`:""
-      const ownerQuery = `&owner=${address}`
+      const ownerQuery = `&owner=${ownerAddress}`
       const {data} = await axios.get("/v1/marketplace?limit=40"+ownerQuery+offsetQuery)
       const {assets} = data
       this.nextCursor = data.next
@@ -46,7 +49,7 @@ class TestContainer extends React.Component{
         isLast:!data.next,
       }))
     }
-    async load(props){
+    async load(){
       const auth = this.props.auth || {}
       const {address, accessToken} = auth
       if(!address || !accessToken) return;
@@ -68,6 +71,7 @@ class TestContainer extends React.Component{
         const Comp = openseaList.length && openseaList.map( e =>
             (<
               OpenSeaCard
+                onClick={()=>this.clickItem(e)}
                 key={e.id}
                 openseaLink={e.permalink}
                 imageURL={e.image_url}

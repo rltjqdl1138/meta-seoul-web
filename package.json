@@ -2,7 +2,7 @@
   "name": "meta-seoul-web",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:8020",
+  "proxy": "http://1.221.216.110:8020",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.2",

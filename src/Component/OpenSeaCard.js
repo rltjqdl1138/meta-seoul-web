@@ -1,8 +1,8 @@
 
-function OpenSeaCard({openseaLink, imageURL, description, name}){
+function OpenSeaCard({openseaLink, imageURL, description, name, onClick}){
   return(
     <div style={styles.card}>
-      <a href={openseaLink} style={{textDecoration: 'none'}}>
+      <a href={onClick ? "#":openseaLink} onClick={onClick?()=>onClick() : ()=>{}} style={{textDecoration: 'none'}}>
         <div style={styles.cardContainer}>
           <div style={styles.cardMainContainer}>
             <div style={styles.cardImageContainer}>

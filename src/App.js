@@ -43,7 +43,8 @@ class App extends React.Component {
                             <Route path="1" element={<ExploreContainer />} />
                             <Route path="2" element={<TestContainer auth={this.state.auth}/>}/>
                             <Route path="3" element={<NFTImageContainer auth={this.state.auth}/>}/>
-                            <Route path="4" element={<TestContainer2 auth={this.state.auth}/>}/>
+                            <Route path="4" element={<MyNFTImageContainer auth={this.state.auth}/>}/>
+                            <Route path="5" element={<TestContainer2 auth={this.state.auth}/>}/>
                         </Route>
                     </Routes>
                     {this.state.isDisableLoginModal ? null : (<LoginContainer setProps={this.SetState} setLoginModal={this.setLoginModal}/>)}
