@@ -5,14 +5,41 @@ import OpenSeaCard from '../Component/OpenSeaCard';
 class NFTImageContainer extends React.Component{
   constructor(props){
     super(props)
-    this.state = {list:[], pagination:{}}
+
+    this.state = {
+      list:[],
+      pagination:{},
+      column: this.GetColumn(),
+    }
   }
+  loading = false
   accessToken = null
   currentCursor = "hello"
   nextCursor = null
 
   componentDidMount(){
     this.load()
+    this.AddHandler()
+  }
+  GetColumn(){
+    const column = Math.floor((window.document.body.clientWidth - 132)/290)
+    return column
+  }
+  AddHandler(){
+    const {column} = this.state
+    const handler = (e)=>{
+      const newColumn = this.GetColumn()
+      if(newColumn !== column){
+        this.setState(state => ({...state, column:newColumn}))
+      }
+    }
+    window.document.addEventListener('scroll', (e)=>{
+      if(this.loading === false && window.innerHeight + window.scrollY === window.document.body.clientHeight){
+        this.loading = true
+        this.load()
+      }
+    })
+    window.addEventListener('resize', handler);
   }
   async load(){
     const auth = this.props.auth || {}
@@ -24,18 +51,18 @@ class NFTImageContainer extends React.Component{
       const {limit, nextPage} = this.state.pagination
       pagingQuery = `limit=${limit}&page=${nextPage}`
     }else{
-      const limit = 10;
+      const limit = this.state.column*3;
       const nextPage = 1
       pagingQuery = `limit=${limit}&page=${nextPage}`
     }
     const {data} = await axios.get("/v1/nft/image?"+pagingQuery, {headers: {'Authorization':`Bearer ${accessToken}`}})
     const {list, pagination} = data
-    console.log(pagination)
     
     this.setState(state=>({list:[...state.list, ...list], pagination}))
+    this.loading = false
   }
   render(){
-    const {list, pagination} = this.state
+    const {list} = this.state
     const Comp = list.length && list.map( (e, index) =>
       (<
         OpenSeaCard
@@ -49,12 +76,7 @@ class NFTImageContainer extends React.Component{
     return (
       <div >
         <div style={styles.container}>
-        {Comp}
-        </div>
-        <div>
-          <button style={{display:pagination.nextPage?'':'none'}} onClick={()=>this.load()}>
-            Load More
-          </button>
+          {Comp}
         </div>
       </div>
     )

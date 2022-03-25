@@ -1,7 +1,5 @@
 import React from 'react';
-//import MapComponent from '../Component/MapComponent';
 import MapComponent from '../Component/MapComponent';
-import TileComponent from '../Component/TileComponent';
 import TileInfoComponent from '../Component/TileComponent/TileInfoComponent';
 
 class MapContainer extends React.Component{
